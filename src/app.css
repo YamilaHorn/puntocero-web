@@ -1,3 +1,57 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 72 100% 50%;
+    --primary-foreground: 0 0% 4%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 64%;
+    --accent: 72 100% 50%;
+    --accent-foreground: 0 0% 4%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 15%; /* Esto define el color del borde */
+    --input: 0 0% 15%;
+    --ring: 72 100% 50%;
+    --radius: 0.5rem;
+    --font-inter: 'Inter', sans-serif;
+    --font-heading: 'Inter', sans-serif;
+  }
+}
+
+@layer base {
+  * {
+    /* Cambiamos el @apply que falla por la propiedad directa de CSS */
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-inter);
+  }
+}
+
+@layer utilities {
+  .text-volt { color: #D1FF00; }
+  .bg-volt { background-color: #D1FF00; }
+  .border-volt { border-color: #D1FF00; }
+  .bg-obsidian { background-color: #0A0A0A; }
+  .bg-carbon { background-color: #1A1A1A; }
+  .text-titanium { color: #F5F5F5; }
+  .font-heading {
+    font-family: var(--font-heading);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.05em;
+  }
+}

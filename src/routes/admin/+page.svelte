@@ -1,72 +1,126 @@
 <script lang="ts">
-    import { supabase } from '$lib/supabase';
-    import { PUBLIC_CLOUDINARY_CLOUD_NAME, PUBLIC_CLOUDINARY_UPLOAD_PRESET } from '$env/static/public';
+  import { supabase } from '$lib/supabase';
+  import { goto } from '$app/navigation';
 
-    let name = '';
-    let price_total = 0;
-    let fileInput: HTMLInputElement;
-    let uploading = false;
+  let name = '';
+  let price = '';
+  let category = 'Botines';
+  let description = '';
+  let image_url = '';
+  let loading = false;
 
-    async function handleSubmit() {
-        if (!fileInput.files || fileInput.files.length === 0) return alert('Subí una foto che!');
-        
-        uploading = true;
-        const file = fileInput.files[0];
+  async function handleAddProduct() {
+    loading = true;
+    
+    const { error } = await supabase
+      .from('products')
+      .insert([{ 
+        name, 
+        price: parseFloat(price), 
+        category, 
+        description, 
+        image_url 
+      }]);
 
-        // 1. Subir imagen a Cloudinary
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', PUBLIC_CLOUDINARY_UPLOAD_PRESET);
-
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
-            method: 'POST',
-            body: formData
-        });
-        const imgData = await res.json();
-
-        // 2. Guardar todo en Supabase
-        const { error } = await supabase.from('products').insert([
-            { 
-                name, 
-                price_total, 
-                image_url: imgData.secure_url 
-            }
-        ]);
-
-        if (error) {
-            alert('Error al guardar en base de datos');
-        } else {
-            alert('Botín cargado con éxito! 🚀');
-            name = '';
-            price_total = 0;
-        }
-        uploading = false;
+    if (error) {
+      alert('Error al subir el producto');
+      console.error(error);
+    } else {
+      goto('/admin'); // Volver al panel principal
     }
+    loading = false;
+  }
 </script>
 
-<div class="max-w-md mx-auto mt-10 p-6 bg-white rounded-xl shadow-md border border-gray-100">
-    <h1 class="text-2xl font-bold mb-6 text-gray-800">Cargar Nuevo Botín</h1>
-
-    <div class="space-y-4">
-        <input type="text" placeholder="Nombre del botín" bind:value={name} class="w-full p-2 border rounded" />
-        <input type="number" placeholder="Precio Total" bind:value={price_total} class="w-full p-2 border rounded" />
-        
-        <label for="foto-botin" class="block text-sm font-medium text-gray-700">Foto del botín</label>
-<input 
-    id="foto-botin"
-    type="file" 
-    bind:this={fileInput} 
-    class="w-full text-sm text-gray-500" 
-/>
-
-        <button 
-            on:click={handleSubmit} 
-            disabled={uploading}
-            class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 disabled:bg-gray-400"
-        >
-            {uploading ? 'Subiendo...' : 'Publicar Botín'}
-        </button>
-    </div>
+<section class="min-h-screen bg-obsidian pt-32 pb-20 px-6">
+  <div class="max-w-3xl mx-auto">
     
-    <a href="/" class="block text-center mt-4 text-sm text-gray-500 underline">Volver al catálogo</a>
-</div>
+    <div class="flex items-center gap-4 mb-10">
+      <div class="w-12 h-12 bg-volt flex items-center justify-center rounded-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-obsidian" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="font-heading text-titanium text-3xl md:text-4xl uppercase leading-none">Nuevo <span class="text-volt">Producto</span></h1>
+        <p class="text-titanium/40 text-[10px] tracking-[0.3em] uppercase mt-2">Carga de inventario — Punto Cero</p>
+      </div>
+    </div>
+
+    <div class="bg-carbon/50 backdrop-blur-xl border border-white/10 p-8 shadow-2xl">
+      <form on:submit|preventDefault={handleAddProduct} class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <div class="md:col-span-2">
+          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Nombre del Botín / Zapatilla</label>
+          <input 
+            bind:value={name}
+            placeholder="EJ: NIKE MERCURIAL AIR ZOOM"
+            required
+            class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:outline-none focus:border-volt/50 transition-colors placeholder:text-white/5"
+          />
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Precio (ARS)</label>
+          <input 
+            type="number"
+            bind:value={price}
+            placeholder="0.00"
+            required
+            class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:outline-none focus:border-volt/50 transition-colors"
+          />
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Categoría</label>
+          <select 
+            bind:value={category}
+            class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:outline-none focus:border-volt/50 transition-colors appearance-none"
+          >
+            <option value="Botines">Botines</option>
+            <option value="Zapatillas">Zapatillas</option>
+            <option value="Indumentaria">Indumentaria</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">URL de la Imagen</label>
+          <input 
+            bind:value={image_url}
+            placeholder="https://tu-imagen.com/foto.jpg"
+            required
+            class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:outline-none focus:border-volt/50 transition-colors placeholder:text-white/5"
+          />
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Descripción técnica</label>
+          <textarea 
+            bind:value={description}
+            rows="4"
+            placeholder="DETALLES DE TRACCIÓN, MATERIAL, ETC..."
+            class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:outline-none focus:border-volt/50 transition-colors placeholder:text-white/5 resize-none"
+          ></textarea>
+        </div>
+
+        <div class="md:col-span-2 flex flex-col sm:flex-row gap-4 pt-4">
+          <button 
+            type="submit" 
+            disabled={loading}
+            class="flex-1 bg-volt text-obsidian font-black text-xs tracking-[0.3em] py-5 hover:bg-white transition-all duration-300 uppercase disabled:opacity-50"
+          >
+            {loading ? 'Subiendo...' : 'Publicar Producto'}
+          </button>
+          
+          <button 
+            type="button"
+            on:click={() => goto('/admin')}
+            class="flex-1 border border-white/10 text-titanium/50 font-bold text-xs tracking-[0.3em] py-5 hover:bg-white/5 transition-all duration-300 uppercase"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
