@@ -2,122 +2,108 @@
   import { supabase } from '$lib/supabase';
   import { goto } from '$app/navigation';
 
+  // Variables del formulario
   let name = '';
   let price = '';
   let category = 'Botines';
   let description = '';
   let image_url = '';
+  let stock_qty = 0;
+  let is_on_demand = false;
   let loading = false;
 
   async function handleAddProduct() {
+    // 1. Activamos el estado de carga
     loading = true;
     
-    const { error } = await supabase
-      .from('products')
-      .insert([{ 
-        name, 
-        price: parseFloat(price), 
-        category, 
-        description, 
-        image_url 
-      }]);
+    try {
+      // 2. Intentamos la inserción en Supabase
+      const { error } = await supabase
+        .from('products')
+        .insert([{ 
+          name, 
+          price_total: parseFloat(price), 
+          category, 
+          description, 
+          image_url,
+          stock_qty: parseInt(stock_qty.toString()),
+          is_on_demand
+        }]);
 
-    if (error) {
-      alert('Error al subir el producto');
-      console.error(error);
-    } else {
-      goto('/admin'); // Volver al panel principal
+      // 3. Si Supabase devuelve un error controlado
+      if (error) {
+        console.error("Error de Supabase:", error);
+        alert('Error de base de datos: ' + error.message);
+      } else {
+        // Si todo sale bien
+        alert('Producto agregado con éxito');
+        goto('/admin');
+      }
+
+    } catch (err) {
+      // 4. Si la conexión se cae o hay un error crítico de JavaScript
+      console.error("Error crítico de red o código:", err);
+      alert('Error de conexión o de código. Revisá la consola (F12).');
+    } finally {
+      // 5. PASE LO QUE PASE, desactivamos el cargando para que no se quede congelado
+      loading = false;
     }
-    loading = false;
   }
 </script>
 
 <section class="min-h-screen bg-obsidian pt-32 pb-20 px-6">
   <div class="max-w-3xl mx-auto">
     
-    <div class="flex items-center gap-4 mb-10">
-      <div class="w-12 h-12 bg-volt flex items-center justify-center rounded-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-obsidian" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-      </div>
-      <div>
-        <h1 class="font-heading text-titanium text-3xl md:text-4xl uppercase leading-none">Nuevo <span class="text-volt">Producto</span></h1>
-        <p class="text-titanium/40 text-[10px] tracking-[0.3em] uppercase mt-2">Carga de inventario — Punto Cero</p>
-      </div>
+    <div class="mb-10">
+      <h1 class="font-heading text-titanium text-4xl uppercase">Nuevo <span class="text-volt">Producto</span></h1>
+      <p class="text-titanium/40 text-[10px] tracking-[0.3em] uppercase mt-2">Carga de inventario — Punto Cero</p>
     </div>
 
-    <div class="bg-carbon/50 backdrop-blur-xl border border-white/10 p-8 shadow-2xl">
+    <div class="bg-carbon/50 backdrop-blur-xl border border-white/10 p-8">
       <form on:submit|preventDefault={handleAddProduct} class="grid grid-cols-1 md:grid-cols-2 gap-8">
         
         <div class="md:col-span-2">
-          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Nombre del Botín / Zapatilla</label>
-          <input 
-            bind:value={name}
-            placeholder="EJ: NIKE MERCURIAL AIR ZOOM"
-            required
-            class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:outline-none focus:border-volt/50 transition-colors placeholder:text-white/5"
-          />
+          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Nombre</label>
+          <input bind:value={name} required class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm" />
         </div>
 
         <div>
           <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Precio (ARS)</label>
-          <input 
-            type="number"
-            bind:value={price}
-            placeholder="0.00"
-            required
-            class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:outline-none focus:border-volt/50 transition-colors"
-          />
+          <input type="number" bind:value={price} required class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm" />
         </div>
 
         <div>
           <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Categoría</label>
-          <select 
-            bind:value={category}
-            class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:outline-none focus:border-volt/50 transition-colors appearance-none"
-          >
+          <select bind:value={category} class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm">
             <option value="Botines">Botines</option>
             <option value="Zapatillas">Zapatillas</option>
             <option value="Indumentaria">Indumentaria</option>
           </select>
         </div>
 
-        <div class="md:col-span-2">
-          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">URL de la Imagen</label>
-          <input 
-            bind:value={image_url}
-            placeholder="https://tu-imagen.com/foto.jpg"
-            required
-            class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:outline-none focus:border-volt/50 transition-colors placeholder:text-white/5"
-          />
+        <div>
+          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Stock Disponible</label>
+          <input type="number" bind:value={stock_qty} class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm" />
+        </div>
+
+        <div class="flex items-center gap-4 pt-6">
+          <input type="checkbox" bind:checked={is_on_demand} class="w-5 h-5 accent-volt" />
+          <label class="text-[10px] font-bold text-titanium uppercase tracking-[0.2em]">Producto bajo pedido (On Demand)</label>
         </div>
 
         <div class="md:col-span-2">
-          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Descripción técnica</label>
-          <textarea 
-            bind:value={description}
-            rows="4"
-            placeholder="DETALLES DE TRACCIÓN, MATERIAL, ETC..."
-            class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:outline-none focus:border-volt/50 transition-colors placeholder:text-white/5 resize-none"
-          ></textarea>
+          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">URL Imagen</label>
+          <input bind:value={image_url} required class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm" />
         </div>
 
-        <div class="md:col-span-2 flex flex-col sm:flex-row gap-4 pt-4">
-          <button 
-            type="submit" 
-            disabled={loading}
-            class="flex-1 bg-volt text-obsidian font-black text-xs tracking-[0.3em] py-5 hover:bg-white transition-all duration-300 uppercase disabled:opacity-50"
-          >
+        <div class="md:col-span-2">
+          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Descripción</label>
+          <textarea bind:value={description} rows="3" class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm"></textarea>
+        </div>
+
+        <div class="md:col-span-2 flex gap-4 pt-4">
+          <button type="submit" disabled={loading} class="flex-1 bg-volt text-obsidian font-black py-5 uppercase hover:bg-white transition-all">
             {loading ? 'Subiendo...' : 'Publicar Producto'}
-          </button>
-          
-          <button 
-            type="button"
-            on:click={() => goto('/admin')}
-            class="flex-1 border border-white/10 text-titanium/50 font-bold text-xs tracking-[0.3em] py-5 hover:bg-white/5 transition-all duration-300 uppercase"
-          >
-            Cancelar
           </button>
         </div>
       </form>

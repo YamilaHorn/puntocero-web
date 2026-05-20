@@ -1,10 +1,10 @@
 <script lang="ts">
-  const WPP_URL = 'https://wa.me/5491100000000?text=Hola!%20Quiero%20consultar%20sobre%20calzado%20deportivo';
+  const WPP_URL = 'https://wa.me/message/QQP7UIPIOEKKD1?text=Hola!%20Quiero%20consultar%20sobre%20calzado%20deportivo';
 
   const benefits = [
     { title: 'Envío Express',   desc: '24h a todo el país'     },
-    { title: 'Cambios Gratis',  desc: '30 días sin preguntas'  },
-    { title: 'Cuotas sin Interés', desc: 'Hasta 12 cuotas'    },
+    { title: 'Cambios Gratis',  desc: '30 días'  },
+    { title: 'Cuotas con Interés', desc: 'Hasta 12 cuotas'    },
     { title: 'Compra Segura',   desc: 'Garantía de autenticidad' },
   ];
 

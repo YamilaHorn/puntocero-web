@@ -1,6 +1,6 @@
 <script lang="ts">
   let showTooltip = true;
-  const WPP_URL = 'https://wa.me/5491100000000?text=Hola!%20Quiero%20consultar%20sobre%20calzado%20deportivo';
+  const WPP_URL = 'https://wa.me/message/QQP7UIPIOEKKD1?text=Hola!%20Quiero%20consultar%20sobre%20calzado%20deportivo';
 </script>
 
 <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">

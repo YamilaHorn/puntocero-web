@@ -65,7 +65,7 @@
             </svg>
           </a>
 
-          <a href="https://wa.me/5491100000000?text=Hola!%20Quiero%20consultar%20por%20un%20calzado"
+          <a href="https://wa.me/message/QQP7UIPIOEKKD1?text=Hola!%20Quiero%20consultar%20por%20un%20calzado"
              target="_blank" rel="noopener noreferrer"
              class="inline-flex items-center gap-3 border border-white/20 text-titanium font-semibold text-sm tracking-wide px-7 py-4 hover:border-volt/50 hover:text-volt transition-all duration-300">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"

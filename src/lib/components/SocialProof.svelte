@@ -18,7 +18,7 @@
     '★ 4.9/5 — MÁS DE 3,500 CLIENTES',
     'CONSULTA SIN CARGO POR WHATSAPP',
     'CAMBIOS Y DEVOLUCIONES GRATIS',
-    'PAGO EN CUOTAS SIN INTERÉS',
+    'PAGO EN CUOTAS CON INTERÉS',
     'STOCK PERMANENTE DE TALLES ESPECIALES',
   ];
   const doubled = [...tickerItems, ...tickerItems];
