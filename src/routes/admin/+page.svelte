@@ -1,112 +1,163 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { supabase } from '$lib/supabase';
   import { goto } from '$app/navigation';
 
-  // Variables del formulario
-  let name = '';
-  let price = '';
-  let category = 'Botines';
-  let description = '';
-  let image_url = '';
-  let stock_qty = 0;
-  let is_on_demand = false;
-  let loading = false;
+  type AdminProduct = {
+    id: number;
+    name: string;
+    category: string;
+    section: string;
+    price_total: number;
+    image_url: string;
+    stock_qty: number;
+    is_on_demand: boolean;
+  };
 
-  async function handleAddProduct() {
-    // 1. Activamos el estado de carga
-    loading = true;
+  let loadingCheck: boolean = true;
+  let products: AdminProduct[] = [];
+  let deleteLoadingId: number | null = null;
+
+  onMount(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
     
-    try {
-      // 2. Intentamos la inserción en Supabase
-      const { error } = await supabase
-        .from('products')
-        .insert([{ 
-          name, 
-          price_total: parseFloat(price), 
-          category, 
-          description, 
-          image_url,
-          stock_qty: parseInt(stock_qty.toString()),
-          is_on_demand
-        }]);
-
-      // 3. Si Supabase devuelve un error controlado
-      if (error) {
-        console.error("Error de Supabase:", error);
-        alert('Error de base de datos: ' + error.message);
-      } else {
-        // Si todo sale bien
-        alert('Producto agregado con éxito');
-        goto('/admin');
-      }
-
-    } catch (err) {
-      // 4. Si la conexión se cae o hay un error crítico de JavaScript
-      console.error("Error crítico de red o código:", err);
-      alert('Error de conexión o de código. Revisá la consola (F12).');
-    } finally {
-      // 5. PASE LO QUE PASE, desactivamos el cargando para que no se quede congelado
-      loading = false;
+    if (!session || session.user.user_metadata?.role !== 'admin') {
+      alert('Acceso denegado.');
+      goto('/');
+    } else {
+      loadingCheck = false;
+      await fetchProducts();
     }
+  });
+
+  async function fetchProducts(): Promise<void> {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (!error && data) {
+      products = data as AdminProduct[];
+    }
+  }
+
+  async function handleDelete(id: number, name: string): Promise<void> {
+    if (!confirm(`¿Seguro que querés eliminar "${name.toUpperCase()}" de la tienda?`)) return;
+    
+    deleteLoadingId = id;
+    const { error } = await supabase.from('products').delete().eq('id', id);
+
+    if (error) {
+      alert('Error al eliminar: ' + error.message);
+    } else {
+      products = products.filter(p => p.id !== id);
+    }
+    deleteLoadingId = null;
   }
 </script>
 
-<section class="min-h-screen bg-obsidian pt-32 pb-20 px-6">
-  <div class="max-w-3xl mx-auto">
-    
-    <div class="mb-10">
-      <h1 class="font-heading text-titanium text-4xl uppercase">Nuevo <span class="text-volt">Producto</span></h1>
-      <p class="text-titanium/40 text-[10px] tracking-[0.3em] uppercase mt-2">Carga de inventario — Punto Cero</p>
-    </div>
-
-    <div class="bg-carbon/50 backdrop-blur-xl border border-white/10 p-8">
-      <form on:submit|preventDefault={handleAddProduct} class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        
-        <div class="md:col-span-2">
-          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Nombre</label>
-          <input bind:value={name} required class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm" />
-        </div>
-
-        <div>
-          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Precio (ARS)</label>
-          <input type="number" bind:value={price} required class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm" />
-        </div>
-
-        <div>
-          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Categoría</label>
-          <select bind:value={category} class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm">
-            <option value="Botines">Botines</option>
-            <option value="Zapatillas">Zapatillas</option>
-            <option value="Indumentaria">Indumentaria</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Stock Disponible</label>
-          <input type="number" bind:value={stock_qty} class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm" />
-        </div>
-
-        <div class="flex items-center gap-4 pt-6">
-          <input type="checkbox" bind:checked={is_on_demand} class="w-5 h-5 accent-volt" />
-          <label class="text-[10px] font-bold text-titanium uppercase tracking-[0.2em]">Producto bajo pedido (On Demand)</label>
-        </div>
-
-        <div class="md:col-span-2">
-          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">URL Imagen</label>
-          <input bind:value={image_url} required class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm" />
-        </div>
-
-        <div class="md:col-span-2">
-          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Descripción</label>
-          <textarea bind:value={description} rows="3" class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm"></textarea>
-        </div>
-
-        <div class="md:col-span-2 flex gap-4 pt-4">
-          <button type="submit" disabled={loading} class="flex-1 bg-volt text-obsidian font-black py-5 uppercase hover:bg-white transition-all">
-            {loading ? 'Subiendo...' : 'Publicar Producto'}
-          </button>
-        </div>
-      </form>
-    </div>
+{#if loadingCheck}
+  <div class="fixed inset-0 bg-obsidian flex items-center justify-center text-titanium font-mono text-xs tracking-widest z-50">
+    VERIFICANDO CREDENCIALES DE ADMINISTRADOR...
   </div>
-</section>
+{:else}
+  <section class="min-h-screen bg-obsidian pt-32 pb-20 px-6">
+    <div class="max-w-6xl mx-auto">
+      
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12">
+        <div>
+          <h1 class="font-heading text-titanium text-4xl uppercase">Panel <span class="text-volt">Admin</span></h1>
+          <p class="text-titanium/40 text-[10px] tracking-[0.3em] uppercase mt-2">Control General de Stock — Punto Cero</p>
+        </div>
+        <a href="/admin/add" class="bg-volt text-obsidian text-xs tracking-[0.2em] font-black px-6 py-4 uppercase hover:bg-white transition-all">
+          + Add New Product
+        </a>
+      </div>
+
+      <div class="bg-carbon/50 backdrop-blur-xl border border-white/10 overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-white/10 text-[10px] tracking-widest text-volt uppercase font-mono">
+              <th class="p-5">View</th>
+              <th class="p-5">Product Details</th>
+              <th class="p-5">Category</th>
+              <th class="p-5">Section</th>
+              <th class="p-5">Price</th>
+              <th class="p-5 text-center">Stock</th>
+              <th class="p-5 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5 text-sm text-titanium">
+            {#if products.length === 0}
+              <tr>
+                <td colspan="7" class="p-10 text-center text-titanium/30 font-mono text-xs uppercase tracking-widest">
+                  No hay productos cargados en el inventario.
+                </td>
+              </tr>
+            {/if}
+            
+            {#each products as item}
+              <tr class="hover:bg-white/[0.02] transition-colors">
+                <td class="p-5 w-24">
+                  <div class="w-16 h-16 bg-obsidian border border-white/10 flex items-center justify-center overflow-hidden">
+                    {#if item.image_url}
+                      <img src={item.image_url} alt="" class="w-full h-full object-cover" />
+                    {:else}
+                      <span class="text-[9px] text-white/10">S/F</span>
+                    {/if}
+                  </div>
+                </td>
+                
+                <td class="p-5">
+                  <p class="font-bold text-base uppercase tracking-wide">{item.name}</p>
+                  {#if item.is_on_demand}
+                    <span class="inline-block bg-volt/10 text-volt border border-volt/20 text-[9px] font-mono font-bold px-2 py-0.5 mt-1 uppercase tracking-wider">Under Demand</span>
+                  {/if}
+                </td>
+                
+                <td class="p-5 text-xs text-titanium/60 uppercase tracking-widest font-mono">
+                  {item.category}
+                </td>
+
+                <td class="p-5 text-xs text-volt uppercase tracking-widest font-mono">
+                  {item.section || 'TODOS'}
+                </td>
+                
+                <td class="p-5 font-mono text-volt font-bold">
+                  ${item.price_total.toLocaleString('es-AR')}
+                </td>
+                
+                <td class="p-5 text-center font-mono font-bold">
+                  <span class={item.stock_qty === 0 ? 'text-red-500' : 'text-titanium'}>
+                    {item.stock_qty} u
+                  </span>
+                </td>
+                
+                
+                <td class="p-5 text-right">
+  <div class="inline-flex gap-3">
+    <a 
+      href="/admin/edit/{item.id}"
+      class="text-[10px] tracking-widest font-bold text-volt hover:text-white border border-volt/20 hover:border-volt/50 bg-volt/5 px-3 py-2 uppercase transition-all"
+    >
+      Edit
+    </a>
+
+    <button 
+      on:click={() => handleDelete(item.id, item.name)}
+      disabled={deleteLoadingId === item.id}
+      class="text-[10px] tracking-widest font-bold text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-500/50 bg-red-500/5 px-3 py-2 uppercase transition-all disabled:opacity-40"
+    >
+      {deleteLoadingId === item.id ? 'Eliminando...' : 'Delete'}
+    </button>
+  </div>
+</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </section>
+{/if}

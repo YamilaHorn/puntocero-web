@@ -48,6 +48,7 @@
   // Iniciales y nombres automáticos basados en los datos del usuario
   $: userInitial = user?.user_metadata?.full_name?.charAt(0) || user?.email?.charAt(0) || '?';
   $: userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuario';
+  $: isAdmin = user?.user_metadata?.role === 'admin';
 </script>
 
 <nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-500
@@ -105,9 +106,11 @@
                     <p class="text-xs text-titanium font-bold truncate">{userName}</p>
                   </div>
                   
-                  <a href="/admin" class="block w-full text-left px-3 py-2 text-[10px] font-bold text-titanium/70 hover:text-volt transition-colors uppercase tracking-widest">
-                    Panel Admin
-                  </a>
+                  {#if isAdmin}
+  <a href="/admin" class="block w-full text-left px-3 py-2 text-[10px] font-bold text-titanium/70 hover:text-volt transition-colors uppercase tracking-widest">
+    Panel Admin
+  </a>
+{/if}
 
                   <button 
                     on:click={handleLogout}
