@@ -29,6 +29,13 @@
   }
 
   let sizeMatrix: SizeRow[] = [
+    { ar: '31', us: '13Y', stock: 0, enabled: false },
+    { ar: '32', us: '1Y',  stock: 0, enabled: false },
+    { ar: '33', us: '2Y',  stock: 0, enabled: false },
+    { ar: '34', us: '3Y',  stock: 0, enabled: false },
+    { ar: '35', us: '4Y',  stock: 0, enabled: false },
+    { ar: '36', us: '5Y',  stock: 0, enabled: false },
+    { ar: '37', us: '6Y',  stock: 0, enabled: false },
     { ar: '38', us: '6.5', stock: 0, enabled: false },
     { ar: '39', us: '7.5', stock: 0, enabled: false },
     { ar: '40', us: '8',   stock: 0, enabled: false },
@@ -201,6 +208,7 @@
             <option value="Running">Running</option>
             <option value="Basketball">Basketball</option>
             <option value="Trail">Trail</option>
+            <option value="Rugby">Rugby</option>
           </select>
         </div>
 

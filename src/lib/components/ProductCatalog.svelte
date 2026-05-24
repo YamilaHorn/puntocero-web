@@ -3,13 +3,13 @@
   import { supabase } from '$lib/supabase';
   import ProductCard from './ProductCard.svelte';
 
-  // Ajustamos el tipo de dato para que acepte la estructura con variantes
   type Product = {
     id: number;
     name: string;
     category: string;
+    section: string; // 🚨 Agregamos section al tipado
     price: number;
-    images: string[]; // <--- Ahora es un array de fotos para el efecto hover
+    images: string[];
     alt: string;
     inStock: boolean;
     isOnDemand: boolean;
@@ -21,13 +21,14 @@
   let activeCategory = 'TODOS';
 
   onMount(async () => {
-    // Traemos los productos junto con sus variantes anidadas
+    // 🚨 IMPORTANTE: Sumamos "section" a la consulta para saber si es de Fútbol, Rugby, etc.
     const { data, error } = await supabase
       .from('products')
       .select(`
         id,
         name,
         category,
+        section, 
         price_total,
         is_on_demand,
         product_variants (
@@ -43,11 +44,8 @@
     } else if (data) {
       products = (data as any[]).map((p: any) => {
         const variants = p.product_variants || [];
-        
-        // Sumamos el stock real de todas sus variantes
         const totalStock = variants.reduce((acc: number, v: any) => acc + (v.stock_qty || 0), 0);
         
-        // Extraemos TODAS las imágenes de sus variantes en una sola lista plana
         let allImages: string[] = [];
         variants.forEach((v: any) => {
           if (v.images && Array.isArray(v.images)) {
@@ -55,10 +53,7 @@
           }
         });
 
-        // Eliminamos duplicados de links por si usaste las mismas fotos en varios talles
         const uniqueImages = allImages.filter((value, index, self) => self.indexOf(value) === index);
-
-        // Sacamos la lista limpia de talles disponibles sin repetir
         const uniqueSizes = variants
           .map((v: any) => v.size)
           .filter((value: any, index: number, self: any[]) => self.indexOf(value) === index);
@@ -67,8 +62,9 @@
           id: p.id,
           name: p.name,
           category: p.category ? p.category.trim() : '',
+          section: p.section ? p.section.trim() : 'TODOS', // 🚨 Guardamos la sección limpia
           price: p.price_total,
-          images: uniqueImages, // Guardamos el array limpio para el hover
+          images: uniqueImages,
           alt: p.name,
           inStock: p.is_on_demand || totalStock > 0,
           isOnDemand: p.is_on_demand,
@@ -79,19 +75,26 @@
     loading = false;
   });
   
-  // Tu lógica de filtrado ultra robusta se mantiene intacta
+  // 🛠️ LÓGICA DE FILTRADO ADAPTADA A RUGBY
   $: filtered = products.filter(p => {
     const catFiltro = activeCategory.toLowerCase();
     const catProducto = p.category.toLowerCase();
+    const secProducto = p.section.toLowerCase(); // Secciones: fútbol, rugby, running...
 
     if (catFiltro === 'todos') return true;
     
+    // Mapeos históricos de filtros por categoría
     if (catFiltro === 'fútbol') {
-      return catProducto === 'botines';
+      return catProducto === 'botines' && secProducto !== 'rugby';
     }
     
     if (catFiltro === 'running') {
       return catProducto === 'zapatillas';
+    }
+
+    // 🚨 FILTRO EXACTO PARA RUGBY: Busca por la sección guardada en el producto
+    if (catFiltro === 'rugby') {
+      return secProducto === 'rugby';
     }
     
     return catProducto === catFiltro;
@@ -141,6 +144,15 @@
           {activeCategory === 'Fútbol' ? 'bg-volt text-obsidian' : 'border border-white/10 text-white/40 hover:border-volt/40'}"
       >
         Fútbol
+      </button>
+
+      <button 
+        type="button"
+        on:click={() => activeCategory = 'Rugby'}
+        class="px-4 py-2 text-[10px] font-bold tracking-widest transition-all
+          {activeCategory === 'Rugby' ? 'bg-volt text-obsidian' : 'border border-white/10 text-white/40 hover:border-volt/40'}"
+      >
+        Rugby
       </button>
 
       <button 
