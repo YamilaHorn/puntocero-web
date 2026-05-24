@@ -3,15 +3,17 @@
   import { supabase } from '$lib/supabase';
   import ProductCard from './ProductCard.svelte';
 
-  // Definimos la estructura de datos que espera tu componente ProductCard
+  // Ajustamos el tipo de dato para que acepte la estructura con variantes
   type Product = {
     id: number;
     name: string;
     category: string;
     price: number;
-    image: string;
+    images: string[]; // <--- Ahora es un array de fotos para el efecto hover
     alt: string;
     inStock: boolean;
+    isOnDemand: boolean;
+    sizes: string[];
   };
 
   let products: Product[] = [];
@@ -19,46 +21,79 @@
   let activeCategory = 'TODOS';
 
   onMount(async () => {
-    // Traemos los productos
+    // Traemos los productos junto con sus variantes anidadas
     const { data, error } = await supabase
       .from('products')
-      .select('*');
+      .select(`
+        id,
+        name,
+        category,
+        price_total,
+        is_on_demand,
+        product_variants (
+          id,
+          size,
+          stock_qty,
+          images
+        )
+      `);
 
     if (error) {
       console.error("Error al cargar productos:", error);
     } else if (data) {
-      // Usamos 'as any' para ignorar la advertencia de tipos rígidos de Supabase
-      products = (data as any[]).map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        category: p.category ? p.category.trim() : '', // Limpiamos espacios fantasmas
-        price: p.price_total,
-        image: p.image_url,
-        alt: p.name,
-        inStock: (p.stock_qty > 0)
-      }));
+      products = (data as any[]).map((p: any) => {
+        const variants = p.product_variants || [];
+        
+        // Sumamos el stock real de todas sus variantes
+        const totalStock = variants.reduce((acc: number, v: any) => acc + (v.stock_qty || 0), 0);
+        
+        // Extraemos TODAS las imágenes de sus variantes en una sola lista plana
+        let allImages: string[] = [];
+        variants.forEach((v: any) => {
+          if (v.images && Array.isArray(v.images)) {
+            allImages = [...allImages, ...v.images];
+          }
+        });
+
+        // Eliminamos duplicados de links por si usaste las mismas fotos en varios talles
+        const uniqueImages = allImages.filter((value, index, self) => self.indexOf(value) === index);
+
+        // Sacamos la lista limpia de talles disponibles sin repetir
+        const uniqueSizes = variants
+          .map((v: any) => v.size)
+          .filter((value: any, index: number, self: any[]) => self.indexOf(value) === index);
+
+        return {
+          id: p.id,
+          name: p.name,
+          category: p.category ? p.category.trim() : '',
+          price: p.price_total,
+          images: uniqueImages, // Guardamos el array limpio para el hover
+          alt: p.name,
+          inStock: p.is_on_demand || totalStock > 0,
+          isOnDemand: p.is_on_demand,
+          sizes: uniqueSizes
+        };
+      });
     }
     loading = false;
   });
   
-  // Lógica de filtrado ultra robusta
+  // Tu lógica de filtrado ultra robusta se mantiene intacta
   $: filtered = products.filter(p => {
     const catFiltro = activeCategory.toLowerCase();
     const catProducto = p.category.toLowerCase();
 
     if (catFiltro === 'todos') return true;
     
-    // Si el usuario toca "Fútbol", mostramos los que guardaste como "Botines"
     if (catFiltro === 'fútbol') {
       return catProducto === 'botines';
     }
     
-    // Si toca "Running", mostramos las "Zapatillas"
     if (catFiltro === 'running') {
       return catProducto === 'zapatillas';
     }
     
-    // Para Basketball, Trail o cualquier otra, compara directo por texto limpio
     return catProducto === catFiltro;
   });
 </script>

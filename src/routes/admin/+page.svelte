@@ -42,17 +42,35 @@
   }
 
   async function handleDelete(id: number, name: string): Promise<void> {
-    if (!confirm(`¿Seguro que querés eliminar "${name.toUpperCase()}" de la tienda?`)) return;
+    if (!confirm(`¿Seguro que querés eliminar "${name.toUpperCase()}" de la tienda? Se borrarán también todos sus talles y colores asociados.`)) return;
     
     deleteLoadingId = id;
-    const { error } = await supabase.from('products').delete().eq('id', id);
 
-    if (error) {
-      alert('Error al eliminar: ' + error.message);
-    } else {
+    try {
+      // 1. Borramos primero las variantes hijas para evitar que la base de datos tire el error 500
+      const { error: variantDeleteError } = await supabase
+        .from('product_variants')
+        .delete()
+        .eq('product_id', id);
+
+      if (variantDeleteError) throw variantDeleteError;
+
+      // 2. Ahora que no hay dependencias, borramos el producto base de forma segura
+      const { error: productDeleteError } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+      if (productDeleteError) throw productDeleteError;
+
+      // 3. Limpiamos el estado local para reflejar el cambio visual al toque
       products = products.filter(p => p.id !== id);
+
+    } catch (err: any) {
+      alert('Error en el servidor al eliminar: ' + err.message);
+    } finally {
+      deleteLoadingId = null;
     }
-    deleteLoadingId = null;
   }
 </script>
 
@@ -101,7 +119,7 @@
                 <td class="p-5 w-24">
                   <div class="w-16 h-16 bg-obsidian border border-white/10 flex items-center justify-center overflow-hidden">
                     {#if item.image_url}
-                      <img src={item.image_url} alt="" class="w-full h-full object-cover" />
+                      <img src={item.image_url} alt="" class="w-full h-full object-contain p-1" />
                     {:else}
                       <span class="text-[9px] text-white/10">S/F</span>
                     {/if}
@@ -128,30 +146,29 @@
                 </td>
                 
                 <td class="p-5 text-center font-mono font-bold">
-                  <span class={item.stock_qty === 0 ? 'text-red-500' : 'text-titanium'}>
-                    {item.stock_qty} u
+                  <span class={item.stock_qty === 0 && !item.is_on_demand ? 'text-red-500' : 'text-titanium'}>
+                    {item.is_on_demand ? '∞' : `${item.stock_qty} u`}
                   </span>
                 </td>
                 
-                
                 <td class="p-5 text-right">
-  <div class="inline-flex gap-3">
-    <a 
-      href="/admin/edit/{item.id}"
-      class="text-[10px] tracking-widest font-bold text-volt hover:text-white border border-volt/20 hover:border-volt/50 bg-volt/5 px-3 py-2 uppercase transition-all"
-    >
-      Edit
-    </a>
+                  <div class="inline-flex gap-3">
+                    <a 
+                      href="/admin/edit/{item.id}"
+                      class="text-[10px] tracking-widest font-bold text-volt hover:text-white border border-volt/20 hover:border-volt/50 bg-volt/5 px-3 py-2 uppercase transition-all"
+                    >
+                      Edit
+                    </a>
 
-    <button 
-      on:click={() => handleDelete(item.id, item.name)}
-      disabled={deleteLoadingId === item.id}
-      class="text-[10px] tracking-widest font-bold text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-500/50 bg-red-500/5 px-3 py-2 uppercase transition-all disabled:opacity-40"
-    >
-      {deleteLoadingId === item.id ? 'Eliminando...' : 'Delete'}
-    </button>
-  </div>
-</td>
+                    <button 
+                      on:click={() => handleDelete(item.id, item.name)}
+                      disabled={deleteLoadingId === item.id}
+                      class="text-[10px] tracking-widest font-bold text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-500/50 bg-red-500/5 px-3 py-2 uppercase transition-all disabled:opacity-40"
+                    >
+                      {deleteLoadingId === item.id ? 'Eliminando...' : 'Delete'}
+                    </button>
+                  </div>
+                </td>
               </tr>
             {/each}
           </tbody>
