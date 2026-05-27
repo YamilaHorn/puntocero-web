@@ -52,7 +52,7 @@
     const nombre = product?.name || '';
     const color = selectedColor || '';
     const talleText = selectedSize ? ` y talle ${selectedSize}` : '';
-    wppMessage = `https://wa.me/message/QQP7UIPIOEKKD1?text=Hola!%20Quiero%20consultar%20por%20el%20modelo%20${encodeURIComponent(nombre)}%20en%20color%20${encodeURIComponent(color)}${encodeURIComponent(talleText)}`;
+    wppMessage = `https://wa.me/message/QQP7UIPIOEKKD1?text=Hola!%20Quiero%20consultar%20por%2520el%2520modelo%2520${encodeURIComponent(nombre)}%2520en%2520color%2520${encodeURIComponent(color)}${encodeURIComponent(talleText)}`;
   }
 </script>
 
@@ -86,9 +86,16 @@
       <div>
         <span class="font-mono text-xs text-volt tracking-widest uppercase">// {product.category || 'BOTINES'}</span>
         <h1 class="font-heading text-4xl uppercase text-titanium tracking-tight mt-2 mb-1">{product.name || ''}</h1>
-        <p class="font-heading text-volt text-3xl mb-8">${parseFloat(product.price_total || 0).toLocaleString('es-AR')}</p>
+        <p class="font-heading text-volt text-3xl mb-6">${parseFloat(product.price_total || 0).toLocaleString('es-AR')}</p>
 
-        <div class="mb-6">
+        <div class="mb-6 pt-4 border-t border-white/5">
+          <span class="block font-mono text-[10px] text-volt tracking-wider uppercase mb-2">// DESCRIPCIÓN</span>
+          <p class="text-sm text-titanium/70 leading-relaxed whitespace-pre-line max-w-xl">
+            {product.description || 'Sin descripción disponible.'}
+          </p>
+        </div>
+
+        <div class="mb-6 {product.description ? '' : 'pt-4 border-t border-white/5'}">
           <span class="block font-mono text-[10px] text-white/40 tracking-wider uppercase mb-3">
             Colores Disponibles: <span class="text-titanium font-bold">{selectedColor}</span>
           </span>

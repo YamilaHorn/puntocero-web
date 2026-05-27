@@ -28,6 +28,10 @@
   }
 
   function handleMouseLeave() {
+    onMouseLeave();
+  }
+
+  function onMouseLeave() {
     activeImageIndex = 0;
   }
 
@@ -54,18 +58,18 @@
 </script>
 
 <article class="group bg-carbon border border-white/5 flex flex-col overflow-hidden">
-  <div 
-    class="relative aspect-square bg-obsidian overflow-hidden cursor-pointer"
+  
+  <a 
+    href="/catalog/{product.id}"
+    class="relative aspect-square bg-obsidian overflow-hidden cursor-pointer block"
     on:mouseenter={handleMouseEnter}
     on:mouseleave={handleMouseLeave}
-    role="img"
-    aria-label={product.alt}
   >
     {#if cleanImages && cleanImages.length > 0}
       <img 
         src={cleanImages[activeImageIndex] || cleanImages[0]} 
         alt={product.alt}
-        class="w-full h-full object-contain p-6 transition-all duration-500 ease-in-out transform group-hover:scale-105" 
+        class="w-full h-full object-contain p-6 transition-all duration-500 ease-in-out transform hover:scale-105" 
       />
     {:else}
       <div class="w-full h-full flex items-center justify-center text-[10px] font-mono text-white/20 uppercase tracking-widest">Sin imagen</div>
@@ -80,7 +84,7 @@
         {product.quality_type || 'G5'}
       </div>
     </div>
-  </div>
+  </a>
 
   <div class="p-5 flex flex-col flex-1">
     <div class="flex items-center justify-between gap-2 mb-2">
