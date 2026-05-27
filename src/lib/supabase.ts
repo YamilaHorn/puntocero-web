@@ -1,10 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
-import {
-  PUBLIC_SUPABASE_URL,
-  PUBLIC_SUPABASE_ANON_KEY,
-} from "$env/static/public";
+// Cambiamos 'static' por 'dynamic'
+import { env } from "$env/dynamic/public";
 
+// Ahora las llamamos desde el objeto env
 export const supabase = createClient(
-  PUBLIC_SUPABASE_URL,
-  PUBLIC_SUPABASE_ANON_KEY,
+  env.PUBLIC_SUPABASE_URL,
+  env.PUBLIC_SUPABASE_ANON_KEY
 );
