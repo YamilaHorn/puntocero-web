@@ -7,21 +7,21 @@
     id: number;
     name: string;
     category: string;
-    section: string; // 🚨 Agregamos section al tipado
+    section: string;
     price: number;
     images: string[];
     alt: string;
     inStock: boolean;
     isOnDemand: boolean;
     sizes: string[];
+    quality_type: string;
   };
 
   let products: Product[] = [];
   let loading = true;
-  let activeCategory = 'TODOS';
+  let activeCategory = 'TODOS'; // Actúa como el filtro de sección seleccionado
 
   onMount(async () => {
-    // 🚨 IMPORTANTE: Sumamos "section" a la consulta para saber si es de Fútbol, Rugby, etc.
     const { data, error } = await supabase
       .from('products')
       .select(`
@@ -31,6 +31,7 @@
         section, 
         price_total,
         is_on_demand,
+        quality_type,
         product_variants (
           id,
           size,
@@ -62,42 +63,38 @@
           id: p.id,
           name: p.name,
           category: p.category ? p.category.trim() : '',
-          section: p.section ? p.section.trim() : 'TODOS', // 🚨 Guardamos la sección limpia
+          // Fallback limpio por si no tiene sección asignada en base de datos
+          section: p.section ? p.section.trim() : 'Urbano', 
           price: p.price_total,
           images: uniqueImages,
           alt: p.name,
           inStock: p.is_on_demand || totalStock > 0,
           isOnDemand: p.is_on_demand,
-          sizes: uniqueSizes
+          sizes: uniqueSizes,
+          quality_type: p.quality_type ? p.quality_type.trim() : 'G5'
         };
       });
     }
     loading = false;
   });
   
-  // 🛠️ LÓGICA DE FILTRADO ADAPTADA A RUGBY
+  // ⚡ LÓGICA DE FILTRADO ACTUALIZADA: Incluye control estricto para Accesorios
   $: filtered = products.filter(p => {
-    const catFiltro = activeCategory.toLowerCase();
-    const catProducto = p.category.toLowerCase();
-    const secProducto = p.section.toLowerCase(); // Secciones: fútbol, rugby, running...
+    const filtro = activeCategory.toLowerCase();
+    const secProducto = p.section.toLowerCase();
 
-    if (catFiltro === 'todos') return true;
+    if (filtro === 'todos') return true;
     
-    // Mapeos históricos de filtros por categoría
-    if (catFiltro === 'fútbol') {
-      return catProducto === 'botines' && secProducto !== 'rugby';
-    }
+    // Filtros directos mapeados uno a uno con la base de datos
+    if (filtro === 'fútbol') return secProducto === 'fútbol';
+    if (filtro === 'running') return secProducto === 'running';
+    if (filtro === 'rugby') return secProducto === 'rugby';
+    if (filtro === 'basketball') return secProducto === 'basketball';
+    if (filtro === 'trail') return secProducto === 'trail';
+    if (filtro === 'urbano') return secProducto === 'urbano';
+    if (filtro === 'accesorios') return secProducto === 'accesorios'; // <-- Nueva regla de filtrado
     
-    if (catFiltro === 'running') {
-      return catProducto === 'zapatillas';
-    }
-
-    // 🚨 FILTRO EXACTO PARA RUGBY: Busca por la sección guardada en el producto
-    if (catFiltro === 'rugby') {
-      return secProducto === 'rugby';
-    }
-    
-    return catProducto === catFiltro;
+    return secProducto === filtro;
   });
 </script>
 
@@ -118,11 +115,12 @@
       </div>
     </div>
 
-    <div class="flex gap-2 flex-wrap mb-10">
+    <!-- Contenedor con scroll horizontal automático en pantallas pequeñas para que no se deformen los filtros -->
+    <div class="flex gap-2 flex-wrap mb-10 overflow-x-auto pb-2 scrollbar-none">
       <button 
         type="button"
         on:click={() => activeCategory = 'TODOS'}
-        class="px-4 py-2 text-[10px] font-bold tracking-widest transition-all
+        class="px-4 py-2 text-[10px] font-bold tracking-widest uppercase transition-all whitespace-nowrap
           {activeCategory === 'TODOS' ? 'bg-volt text-obsidian' : 'border border-white/10 text-white/40 hover:border-volt/40'}"
       >
         TODOS
@@ -130,8 +128,17 @@
 
       <button 
         type="button"
+        on:click={() => activeCategory = 'Urbano'}
+        class="px-4 py-2 text-[10px] font-bold tracking-widest uppercase transition-all whitespace-nowrap
+          {activeCategory === 'Urbano' ? 'bg-volt text-obsidian' : 'border border-white/10 text-white/40 hover:border-volt/40'}"
+      >
+        Urbano
+      </button>
+
+      <button 
+        type="button"
         on:click={() => activeCategory = 'Running'}
-        class="px-4 py-2 text-[10px] font-bold tracking-widest transition-all
+        class="px-4 py-2 text-[10px] font-bold tracking-widest uppercase transition-all whitespace-nowrap
           {activeCategory === 'Running' ? 'bg-volt text-obsidian' : 'border border-white/10 text-white/40 hover:border-volt/40'}"
       >
         Running
@@ -140,7 +147,7 @@
       <button 
         type="button"
         on:click={() => activeCategory = 'Fútbol'}
-        class="px-4 py-2 text-[10px] font-bold tracking-widest transition-all
+        class="px-4 py-2 text-[10px] font-bold tracking-widest uppercase transition-all whitespace-nowrap
           {activeCategory === 'Fútbol' ? 'bg-volt text-obsidian' : 'border border-white/10 text-white/40 hover:border-volt/40'}"
       >
         Fútbol
@@ -149,7 +156,7 @@
       <button 
         type="button"
         on:click={() => activeCategory = 'Rugby'}
-        class="px-4 py-2 text-[10px] font-bold tracking-widest transition-all
+        class="px-4 py-2 text-[10px] font-bold tracking-widest uppercase transition-all whitespace-nowrap
           {activeCategory === 'Rugby' ? 'bg-volt text-obsidian' : 'border border-white/10 text-white/40 hover:border-volt/40'}"
       >
         Rugby
@@ -158,7 +165,7 @@
       <button 
         type="button"
         on:click={() => activeCategory = 'Basketball'}
-        class="px-4 py-2 text-[10px] font-bold tracking-widest transition-all
+        class="px-4 py-2 text-[10px] font-bold tracking-widest uppercase transition-all whitespace-nowrap
           {activeCategory === 'Basketball' ? 'bg-volt text-obsidian' : 'border border-white/10 text-white/40 hover:border-volt/40'}"
       >
         Basketball
@@ -167,10 +174,20 @@
       <button 
         type="button"
         on:click={() => activeCategory = 'Trail'}
-        class="px-4 py-2 text-[10px] font-bold tracking-widest transition-all
+        class="px-4 py-2 text-[10px] font-bold tracking-widest uppercase transition-all whitespace-nowrap
           {activeCategory === 'Trail' ? 'bg-volt text-obsidian' : 'border border-white/10 text-white/40 hover:border-volt/40'}"
       >
         Trail
+      </button>
+
+      <!-- Botón de Accesorios agregado con las mismas propiedades estilísticas -->
+      <button 
+        type="button"
+        on:click={() => activeCategory = 'Accesorios'}
+        class="px-4 py-2 text-[10px] font-bold tracking-widest uppercase transition-all whitespace-nowrap
+          {activeCategory === 'Accesorios' ? 'bg-volt text-obsidian' : 'border border-white/10 text-white/40 hover:border-volt/40'}"
+      >
+        Accesorios
       </button>
     </div>
 

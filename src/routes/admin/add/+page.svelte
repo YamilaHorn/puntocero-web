@@ -14,13 +14,14 @@
   let section: string = 'Fútbol'; 
   let description: string = '';
   let is_on_demand: boolean = false;
+  let quality_type: string = 'G5';
 
   // 🎨 Unificamos el Color para todo este producto base
   let product_color: string = '';
   // 📷 Contenedor único de fotos para este color específico
   let color_images: string[] = [];
 
-  // 📐 Estructura fija de talles AR con sus respectivas equivalencias US oficiales para calzado deportivo
+  // 📐 Estructura fija de la matriz de talles expandida
   interface SizeRow {
     ar: string;
     us: string;
@@ -28,20 +29,44 @@
     enabled: boolean;
   }
 
+  // Sincronizada a la perfección con la matriz de edición (Indumentaria + Medios talles)
   let sizeMatrix: SizeRow[] = [
+    // --- INDUMENTARIA ---
+    { ar: 'S', us: 'S', stock: 0, enabled: false },
+    { ar: 'M', us: 'M', stock: 0, enabled: false },
+    { ar: 'L', us: 'L', stock: 0, enabled: false },
+    { ar: 'XL', us: 'XL', stock: 0, enabled: false },
+    
+    // --- CALZADO (Talles enteros y medios) ---
     { ar: '31', us: '13Y', stock: 0, enabled: false },
-    { ar: '32', us: '1Y',  stock: 0, enabled: false },
-    { ar: '33', us: '2Y',  stock: 0, enabled: false },
-    { ar: '34', us: '3Y',  stock: 0, enabled: false },
-    { ar: '35', us: '4Y',  stock: 0, enabled: false },
-    { ar: '36', us: '5Y',  stock: 0, enabled: false },
-    { ar: '37', us: '6Y',  stock: 0, enabled: false },
-    { ar: '38', us: '6.5', stock: 0, enabled: false },
-    { ar: '39', us: '7.5', stock: 0, enabled: false },
-    { ar: '40', us: '8',   stock: 0, enabled: false },
-    { ar: '41', us: '8.5', stock: 0, enabled: false },
-    { ar: '42', us: '9.5', stock: 0, enabled: false },
-    { ar: '43', us: '10',  stock: 0, enabled: false }
+    { ar: '31.5', us: '13.5Y', stock: 0, enabled: false },
+    { ar: '32', us: '1Y',   stock: 0, enabled: false },
+    { ar: '32.5', us: '1.5Y', stock: 0, enabled: false },
+    { ar: '33', us: '2Y',   stock: 0, enabled: false },
+    { ar: '33.5', us: '2.5Y', stock: 0, enabled: false },
+    { ar: '34', us: '3Y',   stock: 0, enabled: false },
+    { ar: '34.5', us: '3.5Y', stock: 0, enabled: false },
+    { ar: '35', us: '4Y',   stock: 0, enabled: false },
+    { ar: '35.5', us: '4.5Y', stock: 0, enabled: false },
+    { ar: '36', us: '5Y',   stock: 0, enabled: false },
+    { ar: '36.5', us: '5.5Y', stock: 0, enabled: false },
+    { ar: '37', us: '6Y',   stock: 0, enabled: false },
+    { ar: '37.5', us: '6.5Y', stock: 0, enabled: false },
+    { ar: '38', us: '6.5',  stock: 0, enabled: false },
+    { ar: '38.5', us: '7',   stock: 0, enabled: false },
+    { ar: '39', us: '7.5',  stock: 0, enabled: false },
+    { ar: '39.5', us: '8',   stock: 0, enabled: false },
+    { ar: '40', us: '8',    stock: 0, enabled: false },
+    { ar: '40.5', us: '8.5',  stock: 0, enabled: false },
+    { ar: '41', us: '8.5',  stock: 0, enabled: false },
+    { ar: '41.5', us: '9',   stock: 0, enabled: false },
+    { ar: '42', us: '9.5',  stock: 0, enabled: false },
+    { ar: '42.5', us: '10',  stock: 0, enabled: false },
+    { ar: '43', us: '10',   stock: 0, enabled: false },
+    { ar: '43.5', us: '10.5', stock: 0, enabled: false },
+    { ar: '44', us: '11',   stock: 0, enabled: false },
+    { ar: '44.5', us: '11.5', stock: 0, enabled: false },
+    { ar: 'Único', us: 'U',  stock: 0, enabled: false }
   ];
 
   onMount(async () => {
@@ -54,7 +79,6 @@
     }
   });
 
-  // Subir el set de imágenes global para el color actual
   async function handleGlobalImages(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
@@ -66,17 +90,17 @@
     for (const file of files) {
       try {
         const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 5)}.${fileExt}`;
+        const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 5)}.${fileExt}`;
         
         const { error: uploadError } = await supabase.storage
           .from('products-images')
-          .upload(fileName, file);
+          .upload(uniqueId, file);
 
         if (uploadError) throw uploadError;
 
         const { data } = supabase.storage
           .from('products-images')
-          .getPublicUrl(fileName);
+          .getPublicUrl(uniqueId);
 
         uploadedUrls.push(data.publicUrl);
       } catch (err: any) {
@@ -89,7 +113,6 @@
   }
 
   async function handleAddProductWithVariants(): Promise<void> {
-    // Validar que se haya seleccionado stock en al menos un talle
     const activeVariants = sizeMatrix.filter(v => v.enabled || is_on_demand);
     if (activeVariants.length === 0) {
       alert('Por favor, tildá al menos un talle que tengas en stock.');
@@ -97,13 +120,12 @@
     }
 
     if (!is_on_demand && color_images.length === 0) {
-      alert('Por favor, subí al menos una foto para este modelo de botín.');
+      alert('Por favor, subí al menos una foto para este modelo.');
       return;
     }
 
     loading = true;
     try {
-      // 1. Insertamos el producto base en Supabase
       const fallbackImage = color_images[0] || '';
       const totalStockCalculated = is_on_demand 
         ? 0 
@@ -119,22 +141,32 @@
           description, 
           image_url: fallbackImage,
           stock_qty: totalStockCalculated,
-          is_on_demand
+          is_on_demand,
+          quality_type
         }])
         .select()
         .single();
 
       if (productError) throw productError;
 
-      // 2. Mapeamos e insertamos la grilla física de variantes asociadas
-      // Se guarda con el formato estandarizado "AR X (US Y)" para que la vista lo lea impecable
-      const variantsToInsert = (is_on_demand ? sizeMatrix : activeVariants).map(v => ({
-        product_id: productData.id,
-        color: product_color.toUpperCase().trim(),
-        size: `${v.ar} AR (${v.us} US)`,
-        stock_qty: is_on_demand ? 0 : (parseInt(v.stock.toString()) || 0),
-        images: color_images
-      }));
+      const variantsToInsert = (is_on_demand ? sizeMatrix : activeVariants).map(v => {
+        let sizeString = '';
+        if (v.ar === 'Único') {
+          sizeString = 'Único';
+        } else if (['S', 'M', 'L', 'XL'].includes(v.ar)) {
+          sizeString = `${v.ar}`;
+        } else {
+          sizeString = `${v.ar} AR (${v.us} US)`;
+        }
+
+        return ({
+          product_id: productData.id,
+          color: product_color.toUpperCase().trim(),
+          size: sizeString,
+          stock_qty: is_on_demand ? 0 : (parseInt(v.stock.toString()) || 0),
+          images: color_images
+        });
+      });
 
       const { error: variantsError } = await supabase
         .from('product_variants')
@@ -209,6 +241,15 @@
             <option value="Basketball">Basketball</option>
             <option value="Trail">Trail</option>
             <option value="Rugby">Rugby</option>
+            <option value="Urbano">Urbano</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="quality_type" class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Tipo de Calidad</label>
+          <select id="quality_type" bind:value={quality_type} class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:outline-none focus:border-volt/50">
+            <option value="G5">Calidad G5</option>
+            <option value="Original">Original (Auténtico)</option>
           </select>
         </div>
 
@@ -248,14 +289,22 @@
       <div class="bg-carbon/50 backdrop-blur-xl border border-white/10 p-8 space-y-6">
         <h2 class="text-xs font-mono tracking-widest text-white/40 uppercase border-b border-white/5 pb-2">3. Curva de Talles Disponibles (AR / US)</h2>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
           {#each sizeMatrix as row}
             <div class="p-4 border transition-all flex flex-col justify-between h-28
               {row.enabled ? 'bg-obsidian border-volt/40' : 'bg-obsidian/40 border-white/5 opacity-50'}">
               
               <div class="flex justify-between items-center">
                 <span class="font-mono text-xs font-bold text-titanium">
-                  {row.ar} AR <span class="text-white/40 text-[10px]">({row.us} US)</span>
+                  {#if row.ar === 'Único'}
+                    {row.ar} <span class="text-white/40 text-[10px]">(Universal)</span>
+                  {:else}
+                    {#if ['S', 'M', 'L', 'XL'].includes(row.ar)}
+                      Talle {row.ar}
+                    {:else}
+                      {row.ar} AR <span class="text-white/40 text-[10px]">({row.us} US)</span>
+                    {/if}
+                  {/if}
                 </span>
                 <input 
                   type="checkbox" 
@@ -287,3 +336,18 @@
   </div>
 </section>
 {/if}
+
+<style>
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(204, 255, 0, 0.2);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #ccff00;
+  }
+</style>

@@ -1,16 +1,16 @@
 <script lang="ts">
-  const MARATHON_IMG = 'https://media.base44.com/images/public/69e26d84d90da8813570f5e2/95b67868a_generated_38212d88.png';
-  const CROSSFIT_IMG = 'https://media.base44.com/images/public/69e26d84d90da8813570f5e2/1a4537bca_generated_fac91eaa.png';
-  const TRAIL_IMG    = 'https://media.base44.com/images/public/69e26d84d90da8813570f5e2/2a18352a8_generated_e1608c0a.png';
-  const RUNNER_IMG   = 'https://media.base44.com/images/public/69e26d84d90da8813570f5e2/955b256e0_generated_image.png';
+  const MARATHON_IMG = 'testimonio 1.jpeg';
+  const CROSSFIT_IMG = 'testimonio 2.jpeg';
+  const TRAIL_IMG    = 'testimonio 3.jpeg';
+  const RUNNER_IMG   = 'testimonio 4.jpeg';
 
   type Review = { image: string; alt: string; name: string; location: string; product: string; rating: number; metric: string; metricLabel: string; quote: string; };
 
   const reviews: Review[] = [
-    { image: MARATHON_IMG, alt: 'Atleta durante maratón', name: 'MARCOS R.', location: 'Buenos Aires', product: 'REACT PRO 360',  rating: 5, metric: 'Sub 2:18',   metricLabel: 'Marca personal con este modelo', quote: 'Las mejores zapatillas que usé. Amortiguación increíble, llegué al final con los pies frescos.' },
-    { image: CROSSFIT_IMG, alt: 'Atleta de CrossFit',    name: 'SOFÍA D.',   location: 'Córdoba',       product: 'COURT ELITE X', rating: 5, metric: '+600 WODs',  metricLabel: 'Entrenamientos con el mismo par', quote: 'Compré online, llegó en 24 horas y calzó perfecto. Servicio impecable.' },
-    { image: TRAIL_IMG,    alt: 'Corredor en montaña',   name: 'ADRIÁN S.',  location: 'Mendoza',       product: 'TRAIL GRIP V2', rating: 5, metric: '8,500m D+', metricLabel: 'Desnivel acumulado en temporada', quote: 'Consulté por WhatsApp el talle y me respondieron al toque. Atención de primera.' },
-    { image: RUNNER_IMG,   alt: 'Corredor urbano',       name: 'ELENA V.',   location: 'Rosario',       product: 'REACT PRO 360', rating: 5, metric: '−3 min/km', metricLabel: 'Mejora en ritmo de carrera',     quote: 'No tenían mi talle en stock, consulté por WPP y me consiguieron el par en dos días.' },
+    { image: MARATHON_IMG, alt: 'Atleta durante maratón', name: 'Dylan', location: 'Seguí, Entre Ríos', product: 'Botines Phantom',  rating: 5, metric: 'Insta',   metricLabel: '', quote: 'Botines de calidad y con suerte.' },
+    { image: CROSSFIT_IMG, alt: 'Atleta de CrossFit',    name: 'Nestor R.',   location: 'Hernandarias, Entre Ríos',       product: 'ADIZERO', rating: 5, metric: 'INSTA',  metricLabel: '', quote: 'Compré online, llegó en 48 horas y calzó perfecto. Servicio impecable.' },
+    { image: TRAIL_IMG,    alt: 'Corredor en montaña',   name: 'Augusto V.',  location: 'Crespo, Entre Ríos',       product: 'Botines F50', rating: 5, metric: 'wpp', metricLabel: '', quote: 'Consulté por WhatsApp el fin de semana y me lo prepararon enseguida. Atención de primera.' },
+    { image: RUNNER_IMG,   alt: 'Corredor urbano',       name: 'Valentín A.',   location: 'Crespo, Entre Ríos',       product: 'Botines CrazyFast', rating: 5, metric: 'wpp', metricLabel: '',     quote: 'Hice mas de una compra y siempre me atendieron excelente.' },
   ];
 
   const tickerItems = [

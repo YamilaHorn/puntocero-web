@@ -10,16 +10,19 @@
     alt: string;
     inStock: boolean;
     isOnDemand: boolean;
-    // Modificamos para recibir las variantes físicas o el array de talles procesado
     sizes: any[]; 
+    quality_type: string;
     product_variants?: any[];
   };
 
   // Indice para controlar el efecto de hover de la foto
   let activeImageIndex = 0;
 
+  // Filtro de seguridad por si quedaron URLs rotas o borradas de Supabase
+  $: cleanImages = (product.images || []).filter((img: string) => img && img.trim() !== "" && !img.includes('undefined'));
+
   function handleMouseEnter() {
-    if (product.images && product.images.length > 1) {
+    if (cleanImages && cleanImages.length > 1) {
       activeImageIndex = 1;
     }
   }
@@ -35,7 +38,6 @@
   $: tieneStockReal = product.isOnDemand || (variants.length > 0 ? variants.some(v => v.stock_qty > 0) : product.inStock);
 
   // Limpiamos los textos de los talles para que en la tarjeta no quede un texto gigante
-  // Extrae solo el número AR (ej: de "41 AR (8.5 US)" te deja solo el "41")
   $: cleanSizes = variants.length > 0 
     ? [...new Set(variants.filter(v => product.isOnDemand || v.stock_qty > 0).map(v => v.size.split(' ')[0]))]
     : (product.sizes || []);
@@ -46,6 +48,9 @@
   // Sistema dinámico de badges corregido con el stock real de la matriz
   $: badge = product.isOnDemand ? 'ON DEMAND' : (tieneStockReal ? 'DISPONIBLE' : 'AGOTADO');
   $: badgeColor = product.isOnDemand ? 'bg-blue-500 text-white' : (tieneStockReal ? 'bg-volt text-obsidian' : 'bg-white/10 text-white/40');
+
+  // 🚨 MODIFICADO: Nuevos colores dinámicos según tu diseño agresivo
+  $: qualityColor = product.quality_type === 'Original' ? 'bg-red-600 text-white' : 'bg-black text-volt border border-volt/20';
 </script>
 
 <article class="group bg-carbon border border-white/5 flex flex-col overflow-hidden">
@@ -56,9 +61,9 @@
     role="img"
     aria-label={product.alt}
   >
-    {#if product.images && product.images.length > 0}
+    {#if cleanImages && cleanImages.length > 0}
       <img 
-        src={product.images[activeImageIndex]} 
+        src={cleanImages[activeImageIndex] || cleanImages[0]} 
         alt={product.alt}
         class="w-full h-full object-contain p-6 transition-all duration-500 ease-in-out transform group-hover:scale-105" 
       />
@@ -66,8 +71,14 @@
       <div class="w-full h-full flex items-center justify-center text-[10px] font-mono text-white/20 uppercase tracking-widest">Sin imagen</div>
     {/if}
 
-    <div class="absolute top-3 left-3 px-2.5 py-1 text-[9px] font-bold tracking-widest {badgeColor}">
-      {badge}
+    <div class="absolute top-3 left-3 flex gap-1.5 z-10">
+      <div class="px-2.5 py-1 text-[9px] font-bold tracking-widest {badgeColor}">
+        {badge}
+      </div>
+      
+      <div class="px-2.5 py-1 text-[9px] font-black tracking-widest {qualityColor}">
+        {product.quality_type || 'G5'}
+      </div>
     </div>
   </div>
 

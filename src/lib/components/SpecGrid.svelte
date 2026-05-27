@@ -1,20 +1,42 @@
 <script lang="ts">
-  const FABRIC_IMG = 'https://media.base44.com/images/public/69e26d84d90da8813570f5e2/f221b706f_generated_d1125414.png';
-  const HEEL_IMG   = 'https://media.base44.com/images/public/69e26d84d90da8813570f5e2/a9d104a21_generated_c1c001e1.png';
-  const VENT_IMG   = 'https://media.base44.com/images/public/69e26d84d90da8813570f5e2/130982e19_generated_e4da024e.png';
+  // Imágenes de stock profesionales con estética urbana/deportiva oscura
+  const ATENCION_IMG  = '/atencion.avif'; // Sesión / Asesoría deportiva
+  const ENVIOS_IMG    = '/envios.png'; // Entrega en mano / Personal de confianza
+  const GARANTIA_IMG  = '/garantia.avif'; // Calidad / Textura deportiva premium
 
   type Spec = { id: string; title: string; subtitle: string; description: string; metric: string; metricLabel: string; image: string; imageAlt: string; };
 
   const specs: Spec[] = [
-    { id: '01', title: 'UPPER PREMIUM',  subtitle: 'Materiales Selectos',
-      description: 'Solo trabajamos con marcas y modelos que utilizan materiales de primera línea: mallas técnicas, cueros de alta gama y textiles reciclados de rendimiento.',
-      metric: 'Top 10', metricLabel: 'Marcas del mundo', image: FABRIC_IMG, imageAlt: 'Detalle del tejido técnico de una zapatilla de alto rendimiento' },
-    { id: '02', title: 'SUELA REACTIVA', subtitle: 'Amortiguación y Retorno',
-      description: 'Seleccionamos modelos con sistemas de amortiguación probados: React, ZoomX, Boost y tecnologías propias de cada marca para máximo confort en carrera.',
-      metric: '87%', metricLabel: 'Retorno energético', image: HEEL_IMG, imageAlt: 'Corte transversal de la suela con tecnología de amortiguación' },
-    { id: '03', title: 'VENTILACIÓN TOTAL', subtitle: 'Regulación Térmica',
-      description: 'Priorizamos modelos con sistemas de ventilación activa para mantener el pie fresco durante el esfuerzo máximo, sin sacrificar soporte ni estabilidad.',
-      metric: '−3°C', metricLabel: 'Temperatura del pie', image: VENT_IMG, imageAlt: 'Sistema de ventilación en la parte superior de la zapatilla' },
+    { 
+      id: '01', 
+      title: 'ATENCIÓN PERSONALIZADA', 
+      subtitle: 'Asesoramiento personalizado',
+      description: 'No somos un bot. Te asesoramos directamente por WhatsApp para sacarte todas las dudas sobre talles, hormas y materiales antes de realizar tu compra.',
+      metric: '1 a 1', 
+      metricLabel: 'Contacto Directo', 
+      image: ATENCION_IMG, 
+      imageAlt: 'Asesoramiento personalizado de artículos deportivos' 
+    },
+    { 
+      id: '02', 
+      title: 'ENVÍOS A DOMICILIO', 
+      subtitle: 'Entregas en Persona',
+      description: 'Coordinamos y te llevamos tu pedido personalmente a tu puerta, cuidando el producto desde que sale de nuestro stock hasta que llega a tus manos.',
+      metric: '100%', 
+      metricLabel: 'Gestión Propia', 
+      image: ENVIOS_IMG, 
+      imageAlt: 'Envío y entrega de productos deportivos a domicilio' 
+    },
+    { 
+      id: '03', 
+      title: 'GARANTÍA TOTAL', 
+      subtitle: 'Compra Sin Riesgos',
+      description: 'Tu confianza es lo primero. Cuentas con una garantía real de 30 días por cualquier falla de fabricación en tus botines, zapatillas o indumentaria.',
+      metric: '30 Días', 
+      metricLabel: 'Garantía Asegurada', 
+      image: GARANTIA_IMG, 
+      imageAlt: 'Garantía y control de calidad premium' 
+    },
   ];
 </script>
 
@@ -29,11 +51,11 @@
         <span class="font-mono text-xs text-volt tracking-widest">// POR QUÉ ELEGIRNOS</span>
         <h2 id="specs-heading"
             class="font-heading text-titanium text-4xl sm:text-5xl lg:text-6xl mt-3">
-          CALZADO<br /><span class="text-volt">DE ÉLITE</span>
+          COMPRA<br /><span class="text-volt">GARANTIZADA</span>
         </h2>
       </div>
       <p class="text-white/40 text-sm max-w-sm leading-relaxed lg:text-right">
-        Seleccionamos cada modelo de forma rigurosa. Si está en nuestro catálogo, es porque rinde al máximo nivel.
+        Llevamos el equipamiento deportivo al siguiente nivel, acompañándote en cada paso desde la elección hasta la puerta de tu casa.
       </p>
     </div>
 
@@ -57,7 +79,7 @@
           <p class="text-white/40 text-sm leading-relaxed flex-1">{spec.description}</p>
 
           <div class="mt-6 pt-4 border-t border-white/5">
-            <span class="font-mono text-[9px] text-white/30 tracking-widest">SPEC_{spec.id} — VERIFIED</span>
+            <span class="font-mono text-[9px] text-white/30 tracking-widest">PUNTO_CERO — SERVICE_{spec.id}</span>
           </div>
         </article>
       {/each}

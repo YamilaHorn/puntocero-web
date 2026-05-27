@@ -1,10 +1,10 @@
 <script lang="ts">
-  const HERO_SHOE_IMG = 'https://media.base44.com/images/public/69e26d84d90da8813570f5e2/779a80379_generated_image.png';
+  const HERO_SHOE_IMG = '/logosolo.png';
 
   const stats = [
-    { value: '+200', label: 'Modelos'  },
-    { value: '50+',  label: 'Marcas'   },
-    { value: '24h',  label: 'Envío'    },
+    { value: '+100', label: 'Modelos'  },
+    { value: '+10',  label: 'Marcas'   },
+    { value: '48h',  label: 'Envío'    },
   ];
 </script>
 
@@ -19,9 +19,9 @@
 
   <!-- Background text -->
   <div class="absolute inset-0 flex items-center justify-end overflow-hidden pointer-events-none select-none">
-    <span class="font-heading text-white/[0.03] text-[10rem] md:text-[18rem] lg:text-[24rem] whitespace-nowrap leading-none">
-      SOLE
-    </span>
+    <span class="font-heading text-white/[0.02] text-[8rem] md:text-[14rem] lg:text-[18rem] whitespace-nowrap leading-none">
+    PUNTO CERO
+  </span>
   </div>
 
   <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 w-full pt-24 pb-16">
@@ -36,17 +36,17 @@
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
           </svg>
           <span class="text-xs font-semibold tracking-[0.3em] text-volt uppercase">
-            Colección 2026 — Alto Rendimiento
+            @punt0.cero
           </span>
         </div>
 
         <h1 class="font-heading text-titanium text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.88] mb-6">
-          EL<br />CALZADO<br />QUE <span class="text-volt">GANA</span>
+          DONDE<br />TODO<br /><span class="text-volt">COMIENZA</span>
         </h1>
 
         <p class="text-titanium/50 text-base md:text-lg leading-relaxed max-w-md mb-10">
-          Botines y zapatillas de alto rendimiento. Cada modelo seleccionado
-          para quienes exigen el máximo en cada pisada.
+          Botines, zapatillas y artículos deportivos seleccionados para quienes viven el deporte al máximo. Rendimiento, estilo y calidad en cada paso.
+
         </p>
 
         <div class="flex flex-col sm:flex-row items-start gap-3 mb-12">

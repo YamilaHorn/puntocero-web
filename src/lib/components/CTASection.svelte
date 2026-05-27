@@ -11,8 +11,8 @@
   const perks = [
     'Asesoramiento personalizado según tu deporte',
     'Consulta de stock en tiempo real',
-    'Talles especiales y pedidos a medida',
-    'Seguimiento de tu envío en todo momento',
+    'Talles especiales',
+    'Calidad G5 y Original',
   ];
 
   const stats = [
@@ -60,7 +60,7 @@
           ¿DUDAS?<br /><span class="text-volt">HABLEMOS</span>
         </h2>
         <p class="text-white/40 text-base leading-relaxed max-w-md mb-8">
-          Nuestro equipo te asesora para encontrar el modelo ideal según tu deporte, pisada y presupuesto.
+          Nosotras te asesoramos para encontrar el modelo ideal según tu deporte, pisada y presupuesto.
           Respondemos en minutos por WhatsApp.
         </p>
         <ul class="space-y-3 mb-10">

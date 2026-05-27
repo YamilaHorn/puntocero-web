@@ -17,34 +17,59 @@
   let section: string = ''; 
   let description: string = '';
   let is_on_demand: boolean = false;
+  let quality_type: string = 'G5';
 
   // 🎨 Manejo del color único y fotos de esta tanda
   let product_color: string = '';
   let color_images: string[] = [];
 
-  // 📐 Estructura fija de la matriz de talles del 38 al 43
+  // 📐 Estructura fija de la matriz de talles expandida
   interface SizeRow {
     ar: string;
     us: string;
     stock: number;
     enabled: boolean;
-    variantId?: number; // Guardamos el ID de la variante vieja por si existe
+    variantId?: number;
   }
 
+  // Se agregaron los talles de indumentaria (S al XL) y todos los medios talles de calzado
   let sizeMatrix: SizeRow[] = [
+    // --- INDUMENTARIA ---
+    { ar: 'S', us: 'S', stock: 0, enabled: false },
+    { ar: 'M', us: 'M', stock: 0, enabled: false },
+    { ar: 'L', us: 'L', stock: 0, enabled: false },
+    { ar: 'XL', us: 'XL', stock: 0, enabled: false },
+    
+    // --- CALZADO (Talles enteros y medios) ---
     { ar: '31', us: '13Y', stock: 0, enabled: false },
-    { ar: '32', us: '1Y',  stock: 0, enabled: false },
-    { ar: '33', us: '2Y',  stock: 0, enabled: false },
-    { ar: '34', us: '3Y',  stock: 0, enabled: false },
-    { ar: '35', us: '4Y',  stock: 0, enabled: false },
-    { ar: '36', us: '5Y',  stock: 0, enabled: false },
-    { ar: '37', us: '6Y',  stock: 0, enabled: false },
-    { ar: '38', us: '6.5', stock: 0, enabled: false },
-    { ar: '39', us: '7.5', stock: 0, enabled: false },
-    { ar: '40', us: '8',   stock: 0, enabled: false },
-    { ar: '41', us: '8.5', stock: 0, enabled: false },
-    { ar: '42', us: '9.5', stock: 0, enabled: false },
-    { ar: '43', us: '10',  stock: 0, enabled: false }
+    { ar: '31.5', us: '13.5Y', stock: 0, enabled: false },
+    { ar: '32', us: '1Y',   stock: 0, enabled: false },
+    { ar: '32.5', us: '1.5Y', stock: 0, enabled: false },
+    { ar: '33', us: '2Y',   stock: 0, enabled: false },
+    { ar: '33.5', us: '2.5Y', stock: 0, enabled: false },
+    { ar: '34', us: '3Y',   stock: 0, enabled: false },
+    { ar: '34.5', us: '3.5Y', stock: 0, enabled: false },
+    { ar: '35', us: '4Y',   stock: 0, enabled: false },
+    { ar: '35.5', us: '4.5Y', stock: 0, enabled: false },
+    { ar: '36', us: '5Y',   stock: 0, enabled: false },
+    { ar: '36.5', us: '5.5Y', stock: 0, enabled: false },
+    { ar: '37', us: '6Y',   stock: 0, enabled: false },
+    { ar: '37.5', us: '6.5Y', stock: 0, enabled: false },
+    { ar: '38', us: '6.5',  stock: 0, enabled: false },
+    { ar: '38.5', us: '7',   stock: 0, enabled: false },
+    { ar: '39', us: '7.5',  stock: 0, enabled: false },
+    { ar: '39.5', us: '8',   stock: 0, enabled: false },
+    { ar: '40', us: '8',    stock: 0, enabled: false },
+    { ar: '40.5', us: '8.5',  stock: 0, enabled: false },
+    { ar: '41', us: '8.5',  stock: 0, enabled: false },
+    { ar: '41.5', us: '9',   stock: 0, enabled: false },
+    { ar: '42', us: '9.5',  stock: 0, enabled: false },
+    { ar: '42.5', us: '10',  stock: 0, enabled: false },
+    { ar: '43', us: '10',   stock: 0, enabled: false },
+    { ar: '43.5', us: '10.5', stock: 0, enabled: false },
+    { ar: '44', us: '11',   stock: 0, enabled: false },
+    { ar: '44.5', us: '11.5', stock: 0, enabled: false },
+    { ar: 'Único', us: 'U',  stock: 0, enabled: false }
   ];
 
   $: productId = data?.params?.id || data?.id;
@@ -59,7 +84,6 @@
     }
     loadingCheck = false;
 
-    // 1. Buscamos el producto base junto con todas sus variantes de talles/colores actuales
     const { data: prodData, error } = await supabase
       .from('products')
       .select(`
@@ -85,18 +109,16 @@
       section = prodData.section || 'TODOS';
       description = prodData.description;
       is_on_demand = prodData.is_on_demand;
+      quality_type = prodData.quality_type || 'G5';
 
-      // Cargamos el color y las imágenes desde la primera variante que encontremos
       const firstVariant = prodData.product_variants?.[0];
       if (firstVariant) {
         product_color = firstVariant.color || '';
         color_images = firstVariant.images || [];
       }
 
-      // Sincronizamos las variantes existentes dentro de la matriz fija 38-43
       if (prodData.product_variants) {
         prodData.product_variants.forEach((v: any) => {
-          // Extraemos el talle AR puro (ej: de "41 AR (8.5 US)" saca el "41")
           const cleanAr = v.size.split(' ')[0];
           const matchIndex = sizeMatrix.findIndex(item => item.ar === cleanAr);
           
@@ -111,7 +133,6 @@
     fetchingProduct = false;
   });
 
-  // Subir lote de nuevas imágenes rompiendo la caché
   async function handleImagesUpdate(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
@@ -136,7 +157,6 @@
           .from('products-images')
           .getPublicUrl(fileName);
 
-        // Agregamos el buster temporal para que impacte visualmente al instante en la web
         uploadedUrls.push(`${data.publicUrl}?t=${Date.now()}`);
       } catch (err: any) {
         alert('Error al subir la imagen: ' + err.message);
@@ -147,7 +167,6 @@
     uploadingImages = false;
   }
 
-  // Eliminar una foto de la galería actual en el formulario
   function removeImage(indexToRemove: number) {
     color_images = color_images.filter((_, idx) => idx !== indexToRemove);
   }
@@ -168,12 +187,10 @@
     const idFromUrl = productId || window.location.pathname.split('/').pop();
     
     try {
-      // Calcular stock general sumando la matriz activa
       const totalStockCalculated = is_on_demand 
         ? 0 
         : sizeMatrix.reduce((acc, v) => acc + (v.enabled ? (parseInt(v.stock.toString()) || 0) : 0), 0);
 
-      // 1. Actualizamos la tabla de productos principal
       const { error: productError } = await supabase
         .from('products')
         .update({ 
@@ -184,24 +201,34 @@
           description, 
           image_url: color_images[0] || '',
           stock_qty: totalStockCalculated,
-          is_on_demand
+          is_on_demand,
+          quality_type
         })
         .eq('id', idFromUrl);
 
       if (productError) throw productError;
 
-      // 2. Limpieza y Re-escritura segura de la curva de variantes
-      // Primero removemos los talles viejos para evitar duplicación de claves en esta tanda
       await supabase.from('product_variants').delete().eq('product_id', idFromUrl);
 
-      // Armamos el bloque limpio con las especificaciones nuevas
-      const variantsToInsert = (is_on_demand ? sizeMatrix : activeVariants).map(v => ({
-        product_id: idFromUrl,
-        color: product_color.toUpperCase().trim(),
-        size: `${v.ar} AR (${v.us} US)`,
-        stock_qty: is_on_demand ? 0 : (parseInt(v.stock.toString()) || 0),
-        images: color_images
-      }));
+      const variantsToInsert = (is_on_demand ? sizeMatrix : activeVariants).map(v => {
+        // Formateador limpio: Si es letra o Único no le mete el string de "AR / US" repetido
+        let sizeString = '';
+        if (v.ar === 'Único') {
+          sizeString = 'Único';
+        } else if (['S', 'M', 'L', 'XL'].includes(v.ar)) {
+          sizeString = `${v.ar}`;
+        } else {
+          sizeString = `${v.ar} AR (${v.us} US)`;
+        }
+
+        return {
+          product_id: idFromUrl,
+          color: product_color.toUpperCase().trim(),
+          size: sizeString,
+          stock_qty: is_on_demand ? 0 : (parseInt(v.stock.toString()) || 0),
+          images: color_images
+        };
+      });
 
       const { error: variantsError } = await supabase
         .from('product_variants')
@@ -275,6 +302,16 @@
             <option value="Basketball">Basketball</option>
             <option value="Trail">Trail</option>
             <option value="Rugby">Rugby</option>
+            <option value="Urbano">Urbano</option>
+            <option value="Accesorios">Accesorios</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Tipo de Calidad</label>
+          <select bind:value={quality_type} class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm outline-none">
+            <option value="G5">Calidad G5</option>
+            <option value="Original">Original (Auténtico)</option>
           </select>
         </div>
 
@@ -314,14 +351,22 @@
       <div class="bg-carbon/50 backdrop-blur-xl border border-white/10 p-8 space-y-6">
         <h2 class="text-xs font-mono tracking-widest text-white/40 uppercase border-b border-white/5 pb-2">3. Configurar Curva de Talles Actuales</h2>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
           {#each sizeMatrix as row}
             <div class="p-4 border transition-all flex flex-col justify-between h-28
               {row.enabled ? 'bg-obsidian border-volt/40' : 'bg-obsidian/40 border-white/5 opacity-50'}">
               
               <div class="flex justify-between items-center">
                 <span class="font-mono text-xs font-bold text-titanium">
-                  {row.ar} AR <span class="text-white/40 text-[10px]">({row.us} US)</span>
+                  {#if row.ar === 'Único'}
+                    {row.ar} <span class="text-white/40 text-[10px]">(Universal)</span>
+                  {:else}
+                    {#if ['S', 'M', 'L', 'XL'].includes(row.ar)}
+                      Talle {row.ar}
+                    {:else}
+                      {row.ar} AR <span class="text-white/40 text-[10px]">({row.us} US)</span>
+                    {/if}
+                  {/if}
                 </span>
                 <input 
                   type="checkbox" 
@@ -353,3 +398,19 @@
   </div>
 </section>
 {/if}
+
+<style>
+  /* Un toque sutil de scrollbar personalizado estilo cyberpunk */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(204, 255, 0, 0.2);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #ccff00;
+  }
+</style>
