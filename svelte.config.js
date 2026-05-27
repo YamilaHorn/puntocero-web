@@ -13,6 +13,15 @@ const config = {
     // See https://kit.svelte.dev/docs/adapters for more information about adapters.
     adapter: adapter(),
   },
+
+  // Agregamos esto para Svelte 5:
+  compilerOptions: {
+    warningFilter: (warning) => {
+      // Si el código del warning empieza con 'a11y_', devolvemos false para ignorarlo
+      if (warning.code.startsWith('a11y_')) return false;
+      return true;
+    }
+  }
 };
 
 export default config;

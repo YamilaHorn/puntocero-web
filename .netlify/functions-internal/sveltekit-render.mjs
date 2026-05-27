@@ -12,7 +12,7 @@ return {
 	assets: new Set(["atencion.avif","envios.png","favicon.png","garantia.avif","logo.png","logosolo.png","testimonio 1.jpeg","testimonio 2.jpeg","testimonio 3.jpeg","testimonio 4.jpeg"]),
 	mimeTypes: {".avif":"image/avif",".png":"image/png",".jpeg":"image/jpeg"},
 	_: {
-		client: {start:"_app/immutable/entry/start.C4UxCmKP.js",app:"_app/immutable/entry/app.PcV68Tfa.js",imports:["_app/immutable/entry/start.C4UxCmKP.js","_app/immutable/chunks/BIGnXCbt.js","_app/immutable/chunks/6BgvCUAE.js","_app/immutable/chunks/CASBk2Hs.js","_app/immutable/entry/app.PcV68Tfa.js","_app/immutable/chunks/6BgvCUAE.js","_app/immutable/chunks/Dtw-iRmQ.js","_app/immutable/chunks/DparQVyj.js","_app/immutable/chunks/DllV-8yr.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:true},
+		client: {start:"_app/immutable/entry/start.CBCGNJ_G.js",app:"_app/immutable/entry/app.DWClauR_.js",imports:["_app/immutable/entry/start.CBCGNJ_G.js","_app/immutable/chunks/BIjf2Zob.js","_app/immutable/chunks/6BgvCUAE.js","_app/immutable/chunks/CASBk2Hs.js","_app/immutable/entry/app.DWClauR_.js","_app/immutable/chunks/6BgvCUAE.js","_app/immutable/chunks/Dtw-iRmQ.js","_app/immutable/chunks/DparQVyj.js","_app/immutable/chunks/DllV-8yr.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:true},
 		nodes: [
 			__memo(() => import('../server/nodes/0.js')),
 			__memo(() => import('../server/nodes/1.js')),
