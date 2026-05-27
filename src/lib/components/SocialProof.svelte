@@ -26,12 +26,12 @@
 
 <section id="social" aria-labelledby="social-heading" class="relative bg-carbon overflow-hidden">
 
-  <!-- Ticker top -->
   <div class="border-y border-white/5 py-3 overflow-hidden">
     <div class="animate-scroll-left flex whitespace-nowrap">
       {#each doubled as item, i}
         <span class="inline-flex items-center gap-6 mx-6 text-[10px] font-semibold tracking-[0.3em] text-white/30 uppercase">
-          {item}<span class="w-1.5 h-1.5 bg-volt rounded-full inline-block" />
+          {item}
+          <span class="w-1.5 h-1.5 bg-volt rounded-full inline-block"></span>
         </span>
       {/each}
     </div>
@@ -81,12 +81,12 @@
     </div>
   </div>
 
-  <!-- Ticker bottom -->
   <div class="border-y border-white/5 py-3 overflow-hidden">
     <div class="animate-scroll-left flex whitespace-nowrap" style="animation-direction: reverse">
       {#each doubled as item}
         <span class="inline-flex items-center gap-6 mx-6 text-[10px] font-semibold tracking-[0.3em] text-white/30 uppercase">
-          {item}<span class="w-1.5 h-1.5 bg-volt rounded-full inline-block" />
+          {item}
+          <span class="w-1.5 h-1.5 bg-volt rounded-full inline-block"></span>
         </span>
       {/each}
     </div>
