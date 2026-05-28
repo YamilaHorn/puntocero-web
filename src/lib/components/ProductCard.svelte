@@ -46,8 +46,7 @@
     ? [...new Set(variants.filter(v => product.isOnDemand || v.stock_qty > 0).map(v => v.size.split(' ')[0]))]
     : (product.sizes || []);
 
-  $: wppMessage = WPP_BASE + encodeURIComponent(`Hola! Quiero consultar disponibilidad de ${product.name}`);
-  $: formattedPrice = product.price.toLocaleString('es-AR');
+$: wppMessage = WPP_BASE + '&text=' + encodeURIComponent(`Hola! Quiero consultar disponibilidad de ${product.name}`);  $: formattedPrice = product.price.toLocaleString('es-AR');
 
   // Sistema dinámico de badges corregido con el stock real de la matriz
   $: badge = product.isOnDemand ? 'ON DEMAND' : (tieneStockReal ? 'DISPONIBLE' : 'AGOTADO');
