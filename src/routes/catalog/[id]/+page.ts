@@ -1,9 +1,9 @@
 import { supabase } from '$lib/supabase';
 import { error } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import type { PageLoad } from './$types'; // <--- Cambió de PageServerLoad a PageLoad
 
-export const load: PageServerLoad = async ({ params }) => {
-  // 1. Buscamos el producto específico al que el usuario le hizo clic (AHORA CON DESCRIPCIÓN)
+export const load: PageLoad = async ({ params }) => {
+  // 1. Buscamos el producto específico al que el usuario le hizo clic
   const { data: currentProduct } = await supabase
     .from('products')
     .select(`

@@ -100,29 +100,29 @@
             Colores Disponibles: <span class="text-titanium font-bold">{selectedColor}</span>
           </span>
           <div class="flex gap-3 flex-wrap">
-            {#each uniqueColors as colorItem}
-              <button 
-                type="button"
-                on:click={() => { 
-                  selectedColor = colorItem.name; 
-                  selectedSize = ''; 
-                  
-                  // Si el color clickeado pertenece a otra fila física de la BD, cambia la URL sin recargar
-                  if (colorItem.productId && colorItem.productId !== product.id) {
-                    goto(`/catalog/${colorItem.productId}`, { replaceState: true, noScroll: true });
-                  }
-                }}
-                class="w-14 h-14 bg-carbon p-1 border transition-all relative group overflow-hidden
-                  {selectedColor === colorItem.name ? 'border-volt' : 'border-white/10 hover:border-white/40'}"
-              >
-                {#if colorItem.thumbnail}
-                  <img src={colorItem.thumbnail} alt={colorItem.name} class="w-full h-full object-contain" />
-                {:else}
-                  <div class="w-full h-full flex items-center justify-center text-[8px] text-white/30 uppercase bg-obsidian">Base</div>
-                {/if}
-              </button>
-            {/each}
-          </div>
+  {#each uniqueColors as colorItem}
+    <button 
+      type="button"
+      data-sveltekit-preload-data="hover" on:click={() => { 
+        selectedColor = colorItem.name; 
+        selectedSize = ''; 
+        
+        // Si el color clickeado pertenece a otra fila física de la BD, cambia la URL sin recargar
+        if (colorItem.productId && colorItem.productId !== product.id) {
+          goto(`/catalog/${colorItem.productId}`, { replaceState: true, noScroll: true });
+        }
+      }}
+      class="w-14 h-14 bg-carbon p-1 border transition-all relative group overflow-hidden
+        {selectedColor === colorItem.name ? 'border-volt' : 'border-white/10 hover:border-white/40'}"
+    >
+      {#if colorItem.thumbnail}
+        <img src={colorItem.thumbnail} alt={colorItem.name} class="w-full h-full object-contain" />
+      {:else}
+        <div class="w-full h-full flex items-center justify-center text-[8px] text-white/30 uppercase bg-obsidian">Base</div>
+      {/if}
+    </button>
+  {/each}
+</div>
         </div>
 
         <div class="mb-8">
