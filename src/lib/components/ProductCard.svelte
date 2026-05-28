@@ -1,5 +1,5 @@
 <script lang="ts">
-  const WPP_BASE = 'https://wa.me/message/QQP7UIPIOEKKD1?text=Hola!%20Quiero%20consultar%20disponibilidad%20de%20';
+  const WPP_BASE = 'https://wa.me/5493435349105?text=Hola!%20Quiero%20consultar%20disponibilidad%20de%20';
 
   export let product: {
     id: number;
