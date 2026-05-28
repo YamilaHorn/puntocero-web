@@ -1,5 +1,5 @@
 <script lang="ts">
-  const WPP_BASE = 'https://wa.me/5493435349105?text=Hola!%20Quiero%20consultar%20disponibilidad%20de%20';
+  const WPP_BASE = 'https://wa.me/5493435349105?text=';
 
   export let product: {
     id: number;
@@ -46,7 +46,7 @@
     ? [...new Set(variants.filter(v => product.isOnDemand || v.stock_qty > 0).map(v => v.size.split(' ')[0]))]
     : (product.sizes || []);
 
-  $: wppMessage = WPP_BASE + encodeURIComponent(product.name);
+  $: wppMessage = WPP_BASE + encodeURIComponent(`Hola! Quiero consultar disponibilidad de ${product.name}`);
   $: formattedPrice = product.price.toLocaleString('es-AR');
 
   // Sistema dinámico de badges corregido con el stock real de la matriz
