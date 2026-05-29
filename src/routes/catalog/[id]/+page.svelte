@@ -49,11 +49,14 @@
   // Enlace y mensaje dinámico para concretar la consulta por WhatsApp
   let wppMessage = '';
   $: {
-    const nombre = product?.name || '';
-    const color = selectedColor || '';
-    const talleText = selectedSize ? ` y talle ${selectedSize}` : '';
-    wppMessage = `https://wa.me/message/QQP7UIPIOEKKD1?text=Hola!%20Quiero%20consultar%20por%2520el%2520modelo%2520${encodeURIComponent(nombre)}%2520en%2520color%2520${encodeURIComponent(color)}${encodeURIComponent(talleText)}`;
-  }
+  const nombre = product?.name || '';
+  const color = selectedColor || '';
+  const talleText = selectedSize ? ` y talle ${selectedSize}` : '';
+
+  const mensaje = `Hola! Quiero consultar por el modelo ${nombre} en color ${color}${talleText}`;
+
+  wppMessage = `https://api.whatsapp.com/send?phone=5493435349105&text=${encodeURIComponent(mensaje)}`;
+}
 </script>
 
 <div class="min-h-screen bg-obsidian text-titanium pt-28 pb-12 px-6">

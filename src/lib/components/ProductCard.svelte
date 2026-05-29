@@ -1,5 +1,5 @@
 <script lang="ts">
-  const WPP_BASE = 'https://wa.me/5493435349105?text=';
+const PHONE = '5493435349105';
 
   export let product: {
     id: number;
@@ -10,7 +10,7 @@
     alt: string;
     inStock: boolean;
     isOnDemand: boolean;
-    sizes: any[]; 
+    sizes: any[];
     quality_type: string;
     product_variants?: any[];
   };
@@ -46,7 +46,10 @@
     ? [...new Set(variants.filter(v => product.isOnDemand || v.stock_qty > 0).map(v => v.size.split(' ')[0]))]
     : (product.sizes || []);
 
-$: wppMessage = WPP_BASE + '&text=' + encodeURIComponent(`Hola! Quiero consultar disponibilidad de ${product.name}`);  $: formattedPrice = product.price.toLocaleString('es-AR');
+$: wppMessage = `https://wa.me/${PHONE}?text=${encodeURIComponent(
+  `Hola! Quiero consultar por el modelo ${product.name}`
+)}`;  $: console.log(wppMessage);
+  $: formattedPrice = product.price.toLocaleString('es-AR');
 
   // Sistema dinámico de badges corregido con el stock real de la matriz
   $: badge = product.isOnDemand ? 'ON DEMAND' : (tieneStockReal ? 'DISPONIBLE' : 'AGOTADO');
@@ -104,12 +107,12 @@ $: wppMessage = WPP_BASE + '&text=' + encodeURIComponent(`Hola! Quiero consultar
         >
           COMPRAR AHORA
         </a>
-        <a href={wppMessage} target="_blank" rel="noopener noreferrer"
+        <a href={wppMessage} rel="noopener noreferrer"
            class="w-full flex items-center justify-center gap-2 border border-white/10 text-white/40 font-semibold text-xs tracking-wide py-3 hover:border-[#25D366]/50 hover:text-[#25D366] transition-colors">
           CONSULTAR POR WPP
         </a>
       {:else}
-        <a href={wppMessage} target="_blank" rel="noopener noreferrer"
+        <a href={wppMessage} rel="noopener noreferrer"
            class="w-full flex items-center justify-center gap-2 bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366] font-bold text-xs tracking-widest py-3 hover:bg-[#25D366]/20 transition-colors">
           CONSULTAR DISPONIBILIDAD
         </a>
