@@ -16,6 +16,10 @@
   let is_on_demand: boolean = false;
   let quality_type: string = 'G5';
 
+  // 👟 Nuevas especificaciones exclusivas para Botines
+  let stud_type: string = 'Tapones FG';
+  let lace_type: string = 'Con cordones';
+
   // 🎨 Unificamos el Color para todo este producto base
   let product_color: string = '';
   // 📷 Contenedor único de fotos para este color específico
@@ -29,7 +33,6 @@
     enabled: boolean;
   }
 
-  // Sincronizada a la perfección con la matriz de edición (Indumentaria + Medios talles)
   let sizeMatrix: SizeRow[] = [
     // --- INDUMENTARIA ---
     { ar: 'S', us: 'S', stock: 0, enabled: false },
@@ -37,7 +40,7 @@
     { ar: 'L', us: 'L', stock: 0, enabled: false },
     { ar: 'XL', us: 'XL', stock: 0, enabled: false },
     
-    // --- CALZADO (Talles enteros y medios) ---
+    // --- CALZADO ---
     { ar: '31', us: '13Y', stock: 0, enabled: false },
     { ar: '31.5', us: '13.5Y', stock: 0, enabled: false },
     { ar: '32', us: '1Y',   stock: 0, enabled: false },
@@ -113,8 +116,8 @@
   }
 
   async function handleAddProductWithVariants(): Promise<void> {
-    const activeVariants = sizeMatrix.filter(v => v.enabled || is_on_demand);
-    if (activeVariants.length === 0) {
+    const activeVariants = sizeMatrix.filter(v => v.enabled);
+    if (!is_on_demand && activeVariants.length === 0) {
       alert('Por favor, tildá al menos un talle que tengas en stock.');
       return;
     }
@@ -129,8 +132,9 @@
       const fallbackImage = color_images[0] || '';
       const totalStockCalculated = is_on_demand 
         ? 0 
-        : sizeMatrix.reduce((acc, v) => acc + (v.enabled ? (parseInt(v.stock.toString()) || 0) : 0), 0);
+        : activeVariants.reduce((acc, v) => acc + (parseInt(v.stock.toString()) || 0), 0);
       
+      // Enviamos las nuevas especificaciones de botines a Supabase
       const { data: productData, error: productError } = await supabase
         .from('products')
         .insert([{ 
@@ -142,31 +146,42 @@
           image_url: fallbackImage,
           stock_qty: totalStockCalculated,
           is_on_demand,
-          quality_type
+          quality_type,
+          // 🌟 Mandamos los nuevos datos (asegurate de tener estas columnas, o se guardarán en la descripción si lo preferís)
+          stud_type: category === 'Botines' ? stud_type : null,
+          lace_type: category === 'Botines' ? lace_type : null
         }])
         .select()
         .single();
 
       if (productError) throw productError;
 
-      const variantsToInsert = (is_on_demand ? sizeMatrix : activeVariants).map(v => {
-        let sizeString = '';
-        if (v.ar === 'Único') {
-          sizeString = 'Único';
-        } else if (['S', 'M', 'L', 'XL'].includes(v.ar)) {
-          sizeString = `${v.ar}`;
-        } else {
-          sizeString = `${v.ar} AR (${v.us} US)`;
-        }
+      const variantsToInsert = is_on_demand 
+        ? [{
+            product_id: productData.id,
+            color: product_color.toUpperCase().trim(),
+            size: 'CONSULTAR TALLE',
+            stock_qty: 0,
+            images: color_images
+          }]
+        : activeVariants.map(v => {
+            let sizeString = '';
+            if (v.ar === 'Único') {
+              sizeString = 'Único';
+            } else if (['S', 'M', 'L', 'XL'].includes(v.ar)) {
+              sizeString = `${v.ar}`;
+            } else {
+              sizeString = `${v.ar} AR (${v.us} US)`;
+            }
 
-        return ({
-          product_id: productData.id,
-          color: product_color.toUpperCase().trim(),
-          size: sizeString,
-          stock_qty: is_on_demand ? 0 : (parseInt(v.stock.toString()) || 0),
-          images: color_images
-        });
-      });
+            return ({
+              product_id: productData.id,
+              color: product_color.toUpperCase().trim(),
+              size: sizeString,
+              stock_qty: parseInt(v.stock.toString()) || 0,
+              images: color_images
+            });
+          });
 
       const { error: variantsError } = await supabase
         .from('product_variants')
@@ -253,6 +268,27 @@
           </select>
         </div>
 
+        {#if category === 'Botines'}
+          <div class="transition-all duration-300">
+            <label for="stud_type" class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Tipo de Tapón</label>
+            <select id="stud_type" bind:value={stud_type} class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:outline-none focus:border-volt/50">
+              <option value="Tapones FG">Tapones FG (Terreno Firme)</option>
+              <option value="Tapones AG">Tapones AG (Césped Sintético)</option>
+              <option value="Tapones SG">Tapones SG (Terreno Blando)</option>
+              <option value="Tapones TF">Tapones TF (Fútbol 5 / Turf)</option>
+              <option value="Tapones IC">Tapones IC (Fútbol Sala / Indoor)</option>
+            </select>
+          </div>
+
+          <div class="transition-all duration-300">
+            <label for="lace_type" class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Ajuste / Amarre</label>
+            <select id="lace_type" bind:value={lace_type} class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:outline-none focus:border-volt/50">
+              <option value="Con cordones">Con cordones</option>
+              <option value="Sin cordones">Sin cordones (Laceless)</option>
+            </select>
+          </div>
+        {/if}
+
         <div class="flex items-center gap-4 py-2 md:col-span-2">
           <input id="on-demand" type="checkbox" bind:checked={is_on_demand} class="w-5 h-5 accent-volt cursor-pointer" />
           <label for="on-demand" class="text-[10px] font-bold text-titanium uppercase tracking-[0.2em] cursor-pointer">Producto On Demand (Bajo Pedido — Ignora stock físico)</label>
@@ -295,24 +331,22 @@
               {row.enabled ? 'bg-obsidian border-volt/40' : 'bg-obsidian/40 border-white/5 opacity-50'}">
               
               <div class="flex justify-between items-center">
-                <span class="font-mono text-xs font-bold text-titanium">
-                  {#if row.ar === 'Único'}
-                    {row.ar} <span class="text-white/40 text-[10px]">(Universal)</span>
-                  {:else}
-                    {#if ['S', 'M', 'L', 'XL'].includes(row.ar)}
-                      Talle {row.ar}
-                    {:else}
-                      {row.ar} AR <span class="text-white/40 text-[10px]">({row.us} US)</span>
-                    {/if}
-                  {/if}
-                </span>
-                <input 
-                  type="checkbox" 
-                  bind:checked={row.enabled} 
-                  disabled={is_on_demand}
-                  class="w-4 h-4 accent-volt cursor-pointer" 
-                />
-              </div>
+  <span class="font-mono text-xs font-bold text-titanium">
+    {#if row.ar === 'Único'}
+      {row.ar} <span class="text-white/40 text-[10px]">(Universal)</span>
+    {:else if ['S', 'M', 'L', 'XL'].includes(row.ar)}
+      Talle {row.ar}
+    {:else}
+      {row.ar} AR <span class="text-white/40 text-[10px]">({row.us} US)</span>
+    {/if}
+  </span>
+  <input 
+    type="checkbox" 
+    bind:checked={row.enabled} 
+    disabled={is_on_demand}
+    class="w-4 h-4 accent-volt cursor-pointer" 
+  />
+</div>
 
               <div class="mt-2">
                 <label class="block text-[8px] text-white/30 uppercase tracking-wider mb-1">Stock disponible</label>

@@ -15,6 +15,9 @@
     isOnDemand: boolean;
     sizes: string[];
     quality_type: string;
+    product_variants: any[]; // Aseguramos que viaje el array para la tarjeta
+    stud_type?: string;      // Conectamos los tapones
+    lace_type?: string;      // Conectamos el amarre
   };
 
   let products: Product[] = [];
@@ -32,6 +35,8 @@
         price_total,
         is_on_demand,
         quality_type,
+        stud_type,    
+        lace_type,    
         product_variants (
           id,
           size,
@@ -63,7 +68,6 @@
           id: p.id,
           name: p.name,
           category: p.category ? p.category.trim() : '',
-          // Fallback limpio por si no tiene sección asignada en base de datos
           section: p.section ? p.section.trim() : 'Urbano', 
           price: p.price_total,
           images: uniqueImages,
@@ -71,28 +75,31 @@
           inStock: p.is_on_demand || totalStock > 0,
           isOnDemand: p.is_on_demand,
           sizes: uniqueSizes,
-          quality_type: p.quality_type ? p.quality_type.trim() : 'G5'
+          quality_type: p.quality_type ? p.quality_type.trim() : 'G5',
+          product_variants: variants, // Mantenemos las variantes estructuradas
+          // 🌟 PASAMOS LA DATA CORRECTA DE LOS BOTINES A LA TARJETA
+          stud_type: p.stud_type || '',
+          lace_type: p.lace_type || ''
         };
       });
     }
     loading = false;
   });
   
-  // ⚡ LÓGICA DE FILTRADO ACTUALIZADA: Incluye control estricto para Accesorios
+  // ⚡ LÓGICA DE FILTRADO ORIGINAL COMPLETA
   $: filtered = products.filter(p => {
     const filtro = activeCategory.toLowerCase();
     const secProducto = p.section.toLowerCase();
 
     if (filtro === 'todos') return true;
     
-    // Filtros directos mapeados uno a uno con la base de datos
     if (filtro === 'fútbol') return secProducto === 'fútbol';
     if (filtro === 'running') return secProducto === 'running';
     if (filtro === 'rugby') return secProducto === 'rugby';
     if (filtro === 'basketball') return secProducto === 'basketball';
     if (filtro === 'trail') return secProducto === 'trail';
     if (filtro === 'urbano') return secProducto === 'urbano';
-    if (filtro === 'accesorios') return secProducto === 'accesorios'; // <-- Nueva regla de filtrado
+    if (filtro === 'accesorios') return secProducto === 'accesorios';
     
     return secProducto === filtro;
   });
@@ -115,7 +122,6 @@
       </div>
     </div>
 
-    <!-- Contenedor con scroll horizontal automático en pantallas pequeñas para que no se deformen los filtros -->
     <div class="flex gap-2 flex-wrap mb-10 overflow-x-auto pb-2 scrollbar-none">
       <button 
         type="button"
@@ -180,7 +186,6 @@
         Trail
       </button>
 
-      <!-- Botón de Accesorios agregado con las mismas propiedades estilísticas -->
       <button 
         type="button"
         on:click={() => activeCategory = 'Accesorios'}

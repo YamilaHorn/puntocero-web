@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
 
-  // Recibe la data inyectada desde +page.server.ts
+  // Recibe la data inyectada desde +page.ts / +page.server.ts
   export let data: any;
   
   // Forzamos reactividad segura con tipado dinámico
@@ -15,7 +15,7 @@
       acc[colorName] = {
         name: colorName,
         thumbnail: variant.images?.[0] || '',
-        productId: variant.product_id || product.id, // ID del producto base al que pertenece
+        productId: variant.product_id || product.id,
         sizes: []
       };
     }
@@ -46,17 +46,24 @@
   let activeImageIndex = 0;
   $: if (selectedColor) activeImageIndex = 0;
 
-  // Enlace y mensaje dinámico para concretar la consulta por WhatsApp
+  // Enlace y mensaje dinámico para concretar la consulta por WhatsApp enriquecido
   let wppMessage = '';
   $: {
-  const nombre = product?.name || '';
-  const color = selectedColor || '';
-  const talleText = selectedSize ? ` y talle ${selectedSize}` : '';
+    const nombre = product?.name || '';
+    const color = selectedColor || '';
+    const talleText = selectedSize ? ` y talle ${selectedSize}` : '';
+    
+    let specsText = '';
+    if (product.category === 'Botines') {
+      const tapones = product.stud_type ? ` (${product.stud_type})` : '';
+      const ajuste = product.lace_type ? ` - ${product.lace_type}` : '';
+      specsText = `${tapones}${ajuste}`;
+    }
 
-  const mensaje = `Hola! Quiero consultar por el modelo ${nombre} en color ${color}${talleText}`;
+    const mensaje = `Hola! Quiero consultar por el modelo ${nombre}${specsText} en color ${color}${talleText}`;
 
-  wppMessage = `https://api.whatsapp.com/send?phone=5493435349105&text=${encodeURIComponent(mensaje)}`;
-}
+    wppMessage = `https://api.whatsapp.com/send?phone=5493435349105&text=${encodeURIComponent(mensaje)}`;
+  }
 </script>
 
 <div class="min-h-screen bg-obsidian text-titanium pt-28 pb-12 px-6">
@@ -89,7 +96,24 @@
       <div>
         <span class="font-mono text-xs text-volt tracking-widest uppercase">// {product.category || 'BOTINES'}</span>
         <h1 class="font-heading text-4xl uppercase text-titanium tracking-tight mt-2 mb-1">{product.name || ''}</h1>
-        <p class="font-heading text-volt text-3xl mb-6">${parseFloat(product.price_total || 0).toLocaleString('es-AR')}</p>
+        <p class="font-heading text-volt text-3xl mb-4">${parseFloat(product.price_total || 0).toLocaleString('es-AR')}</p>
+
+        {#if product.category === 'Botines' && (product.stud_type || product.lace_type)}
+          <div class="flex flex-wrap gap-2 mb-6">
+            {#if product.stud_type}
+              <div class="bg-carbon border border-white/10 px-3 py-2 flex flex-col justify-center">
+                <span class="text-[8px] font-mono tracking-widest text-white/30 uppercase">Distribución</span>
+                <span class="text-xs font-mono font-bold text-volt uppercase mt-0.5">{product.stud_type}</span>
+              </div>
+            {/if}
+            {#if product.lace_type}
+              <div class="bg-carbon border border-white/10 px-3 py-2 flex flex-col justify-center">
+                <span class="text-[8px] font-mono tracking-widest text-white/30 uppercase">Tecnología de Ajuste</span>
+                <span class="text-xs font-mono font-bold text-titanium uppercase mt-0.5">{product.lace_type}</span>
+              </div>
+            {/if}
+          </div>
+        {/if}
 
         <div class="mb-6 pt-4 border-t border-white/5">
           <span class="block font-mono text-[10px] text-volt tracking-wider uppercase mb-2">// DESCRIPCIÓN</span>
@@ -98,34 +122,32 @@
           </p>
         </div>
 
-        <div class="mb-6 {product.description ? '' : 'pt-4 border-t border-white/5'}">
+        <div class="mb-6 pt-4 border-t border-white/5">
           <span class="block font-mono text-[10px] text-white/40 tracking-wider uppercase mb-3">
             Colores Disponibles: <span class="text-titanium font-bold">{selectedColor}</span>
           </span>
           <div class="flex gap-3 flex-wrap">
-  {#each uniqueColors as colorItem}
-    <button 
-      type="button"
-      data-sveltekit-preload-data="hover" on:click={() => { 
-        selectedColor = colorItem.name; 
-        selectedSize = ''; 
-        
-        // Si el color clickeado pertenece a otra fila física de la BD, cambia la URL sin recargar
-        if (colorItem.productId && colorItem.productId !== product.id) {
-          goto(`/catalog/${colorItem.productId}`, { replaceState: true, noScroll: true });
-        }
-      }}
-      class="w-14 h-14 bg-carbon p-1 border transition-all relative group overflow-hidden
-        {selectedColor === colorItem.name ? 'border-volt' : 'border-white/10 hover:border-white/40'}"
-    >
-      {#if colorItem.thumbnail}
-        <img src={colorItem.thumbnail} alt={colorItem.name} class="w-full h-full object-contain" />
-      {:else}
-        <div class="w-full h-full flex items-center justify-center text-[8px] text-white/30 uppercase bg-obsidian">Base</div>
-      {/if}
-    </button>
-  {/each}
-</div>
+            {#each uniqueColors as colorItem}
+              <button 
+                type="button"
+                on:click={() => { 
+                  selectedColor = colorItem.name; 
+                  selectedSize = ''; 
+                  if (colorItem.productId && colorItem.productId !== product.id) {
+                    goto(`/catalog/${colorItem.productId}`, { replaceState: true, noScroll: true });
+                  }
+                }}
+                class="w-14 h-14 bg-carbon p-1 border transition-all relative group overflow-hidden
+                  {selectedColor === colorItem.name ? 'border-volt' : 'border-white/10 hover:border-white/40'}"
+              >
+                {#if colorItem.thumbnail}
+                  <img src={colorItem.thumbnail} alt={colorItem.name} class="w-full h-full object-contain" />
+                {:else}
+                  <div class="w-full h-full flex items-center justify-center text-[8px] text-white/30 uppercase bg-obsidian">Base</div>
+                {/if}
+              </button>
+            {/each}
+          </div>
         </div>
 
         <div class="mb-8">
