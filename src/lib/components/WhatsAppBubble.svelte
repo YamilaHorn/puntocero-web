@@ -1,6 +1,8 @@
 <script lang="ts">
   let showTooltip = true;
-  const WPP_URL = 'https://wa.me/message/QQP7UIPIOEKKD1?text=Hola!%20Quiero%20consultar%20sobre%20calzado%20deportivo';
+  // 🌟 Usamos el formato directo con el número de la empresa limpio para que abra el chat al instante
+  const PHONE = '5493435349105';
+  const WPP_URL = `https://wa.me/${PHONE}`;
 </script>
 
 <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
