@@ -39,6 +39,15 @@
     { ar: 'M', us: 'M', stock: 0, enabled: false },
     { ar: 'L', us: 'L', stock: 0, enabled: false },
     { ar: 'XL', us: 'XL', stock: 0, enabled: false },
+
+  // --- GUANTES / ACCESORIOS ---
+    { ar: '6', us: '6', stock: 0, enabled: false },
+    { ar: '7', us: '7', stock: 0, enabled: false },
+    { ar: '8', us: '8', stock: 0, enabled: false },
+    { ar: '9', us: '9', stock: 0, enabled: false },
+    { ar: '10', us: '10', stock: 0, enabled: false },
+    { ar: '11', us: '11', stock: 0, enabled: false },
+    { ar: '12', us: '12', stock: 0, enabled: false },
     
     // --- CALZADO ---
     { ar: '31', us: '13Y', stock: 0, enabled: false },

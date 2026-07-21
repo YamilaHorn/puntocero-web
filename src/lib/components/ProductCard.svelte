@@ -22,10 +22,32 @@
   // Lógica de Stock
   $: tieneStock = product.isOnDemand || product.product_variants.some(v => v.stock_qty > 0);
 
-  // Armamos el texto de los talles de forma dinámica
+  // 🌟 LÓGICA INTELIGENTE DE TALLES (Calzado, Indumentaria y Guantes)
+  $: rawSizes = [...new Set(
+    product.product_variants
+      .filter(v => v.stock_qty > 0)
+      .map(v => v.size.split(' ')[0].toUpperCase())
+  )];
+
+  // Detección del tipo de producto
+  $: esRopa = rawSizes.some(s => ['S', 'M', 'L', 'XL', 'XXL', '3XL'].includes(s));
+  
+  $: esGuantes = product.category?.toLowerCase().includes('guante') || 
+                 product.name?.toLowerCase().includes('guante') ||
+                 (rawSizes.every(s => !isNaN(Number(s)) && Number(s) >= 5 && Number(s) <= 13) && !esRopa);
+
+  // Ordenamos los talles (los números de menor a mayor)
+  $: availableSizes = rawSizes.sort((a, b) => {
+    const numA = parseFloat(a);
+    const numB = parseFloat(b);
+    if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+    return a.localeCompare(b);
+  });
+
+  // Prefijo dinámico según el tipo de talle
   $: sizesText = product.isOnDemand 
     ? 'POR PEDIDO' 
-    : 'AR: ' + [...new Set(product.product_variants.filter(v => v.stock_qty > 0).map(v => v.size.split(' ')[0]))].join(', ');
+    : (esRopa ? 'TALLES: ' : (esGuantes ? 'TALLE: ' : 'AR: ')) + availableSizes.join(', ');
 
   // Mensaje de WhatsApp normalizado con el precio directo
   $: wppMessage = product.isOnDemand
