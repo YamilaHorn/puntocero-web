@@ -9,6 +9,7 @@
     category: string;
     section: string;
     price: number;
+    original_price?: number | null; // 👈 1. AGREGADO AL TIPO
     images: string[];
     alt: string;
     inStock: boolean;
@@ -33,6 +34,7 @@
         category,
         section, 
         price_total,
+        original_price, 
         is_on_demand,
         quality_type,
         stud_type,    
@@ -43,7 +45,7 @@
           stock_qty,
           images
         )
-      `);
+      `); // 👈 2. AGREGADO 'original_price' A LA CONSULTA DE SUPABASE
 
     if (error) {
       console.error("Error al cargar productos:", error);
@@ -70,7 +72,8 @@
           category: p.category ? p.category.trim() : '',
           section: p.section ? p.section.trim() : 'Urbano', 
           price: p.price_total,
-          images: uniqueImages,
+          original_price: p.original_price, // 👈 3. MAPEO CORRECTO
+          images: uniqueImages, 
           alt: p.name,
           inStock: p.is_on_demand || totalStock > 0,
           isOnDemand: p.is_on_demand,

@@ -10,6 +10,7 @@ export const load: PageLoad = async ({ params }) => {
       id,
       name,
       price_total,
+      original_price,
       category,
       description,
       is_on_demand,

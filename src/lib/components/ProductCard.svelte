@@ -6,6 +6,7 @@
     name: string;
     category: string;
     price: number;
+    original_price?: number | null; // 👈 1. AGREGADO ACÁ
     images: string[]; 
     alt: string;
     inStock: boolean;
@@ -58,6 +59,9 @@
   $: badge = product.isOnDemand ? 'BAJO PEDIDO' : (tieneStock ? 'DISPONIBLE' : 'AGOTADO');
   $: badgeClass = product.isOnDemand ? 'bg-red-600 text-white' : (tieneStock ? 'bg-volt text-obsidian' : 'bg-white/10 text-white/40');
   $: qualityClass = product.quality_type === 'Original' ? 'bg-red-600 text-white' : 'bg-black text-volt border border-volt/20';
+
+  // 👈 2. LÓGICA PARA VERIFICAR SI ESTÁ EN OFERTA
+  $: hasDiscount = Boolean(product.original_price && product.original_price > product.price);
 </script>
 
 <article class="bg-carbon border border-white/5 flex flex-col overflow-hidden group relative">
@@ -69,9 +73,16 @@
     <img src={product.images[activeImageIndex] || product.images[0]} alt={product.alt} 
          class="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500" />
     
-    <div class="absolute top-3 left-3 flex gap-1.5">
+    <div class="absolute top-3 left-3 flex gap-1.5 flex-wrap">
       <span class="px-2 py-1 text-[8px] font-bold uppercase {badgeClass}">{badge}</span>
       <span class="px-2 py-1 text-[8px] font-bold uppercase {qualityClass}">{product.quality_type}</span>
+      
+      <!-- 👈 3. BADGE DE OFERTA OPCIONAL EN LA IMAGEN -->
+      {#if hasDiscount}
+        <span class="px-2 py-1 text-[8px] font-bold uppercase bg-red-600 text-white animate-pulse">
+          OFERTA
+        </span>
+      {/if}
     </div>
   </a>
 
@@ -98,11 +109,17 @@
       </div>
     {/if}
 
-    <!-- SECCIÓN DE PRECIO ESTÁNDAR -->
-    <div class="mb-5">
+    <!-- 👈 4. SECCIÓN DE PRECIO ACTUALIZADA (SOPORTA TACHADO) -->
+    <div class="mb-5 flex items-baseline gap-2.5">
       <p class="text-volt font-heading text-3xl font-black tracking-tight leading-none">
         ${product.price.toLocaleString('es-AR')}
       </p>
+
+      {#if hasDiscount && product.original_price}
+        <p class="text-white/40 font-mono text-sm line-through decoration-red-500/80 decoration-2">
+          ${product.original_price.toLocaleString('es-AR')}
+        </p>
+      {/if}
     </div>
 
     <div class="mt-auto space-y-2">

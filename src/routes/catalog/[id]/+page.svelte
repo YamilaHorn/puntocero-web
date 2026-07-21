@@ -96,7 +96,19 @@
       <div>
         <span class="font-mono text-xs text-volt tracking-widest uppercase">// {product.category || 'BOTINES'}</span>
         <h1 class="font-heading text-4xl uppercase text-titanium tracking-tight mt-2 mb-1">{product.name || ''}</h1>
-        <p class="font-heading text-volt text-3xl mb-4">${parseFloat(product.price_total || 0).toLocaleString('es-AR')}</p>
+        <div class="flex items-baseline gap-3 mb-4">
+  <!-- Precio Actual / Oferta -->
+  <span class="font-heading text-volt text-3xl font-black">
+    ${parseFloat(product.price_total || 0).toLocaleString('es-AR')}
+  </span>
+
+  <!-- Precio Anterior Tachado (se muestra solo si existe y es mayor al precio actual) -->
+  {#if product.original_price && parseFloat(product.original_price) > parseFloat(product.price_total)}
+    <span class="text-white/40 font-mono text-lg line-through decoration-red-500/80 decoration-2">
+      ${parseFloat(product.original_price).toLocaleString('es-AR')}
+    </span>
+  {/if}
+</div>
 
         {#if product.category === 'Botines' && (product.stud_type || product.lace_type)}
           <div class="flex flex-wrap gap-2 mb-6">

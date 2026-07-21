@@ -10,6 +10,7 @@
   // Datos generales del producto
   let name: string = '';
   let price: string = '';
+  let originalPrice = '';
   let category: string = 'Botines';
   let section: string = 'Fútbol'; 
   let description: string = '';
@@ -149,6 +150,7 @@
         .insert([{ 
           name: name.toUpperCase().trim(), 
           price_total: parseFloat(price) || 0, 
+          original_price: parseFloat(originalPrice) || null,
           category, 
           section, 
           description, 

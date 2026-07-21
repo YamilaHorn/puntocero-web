@@ -13,6 +13,7 @@
   // Variables principales del producto
   let name: string = '';
   let price: string = '';
+  let original_price: string = '';
   let category: string = '';
   let section: string = ''; 
   let description: string = '';
@@ -108,6 +109,8 @@
     } else {
       name = prodData.name;
       price = prodData.price_total.toString();
+      original_price = prodData.original_price ? prodData.original_price.toString() : '';
+      category = prodData.category;
       category = prodData.category;
       section = prodData.section || 'TODOS';
       description = prodData.description;
@@ -205,6 +208,7 @@
         .update({ 
           name: name.toUpperCase().trim(), 
           price_total: parseFloat(price), 
+          original_price: original_price ? parseFloat(original_price) : null,
           category, 
           section, 
           description, 
@@ -297,6 +301,12 @@
         <div>
           <label class="block text-[10px] font-bold text-volt tracking-[0.2em] uppercase mb-3">Precio (ARS)</label>
           <input type="number" bind:value={price} required class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:border-volt/50 outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-white/60 tracking-[0.2em] uppercase mb-3">Precio Sin Descuento / Tachado (Opcional)</label>
+          <input type="number" bind:value={original_price} placeholder="Ej: 140000" class="w-full bg-obsidian border border-white/10 text-titanium px-5 py-4 text-sm focus:border-volt/50 outline-none" />
+          <span class="text-[9px] text-white/30 mt-1 block">Dejalo vacío si el producto no está en oferta.</span>
         </div>
 
         <div>
