@@ -195,48 +195,6 @@
       </button>
     </div>
 
-    {#if !loading}
-      <div class="w-full mb-10 relative overflow-hidden bg-gradient-to-r from-obsidian via-sky-950/20 to-obsidian border-y border-sky-500/20 py-8 md:py-12 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-6 group">
-        
-        <!-- Imagen de la Selección integrada al diseño oscuro -->
-        <div class="absolute right-0 top-0 h-full w-full md:w-1/2 pointer-events-none opacity-25 md:opacity-45 z-0">
-          <img 
-            src="/mundial.webp" 
-            alt="Selección Argentina" 
-            class="w-full h-full object-cover object-top mix-blend-luminosity filter contrast-125 brightness-75 select-none"
-          />
-          <!-- Degradado para fundir tu foto con el fondo #0B0B0B (obsidian) -->
-          <div class="absolute inset-0 bg-gradient-to-r from-obsidian via-transparent to-obsidian md:from-obsidian md:to-transparent" />
-        </div>
-
-        <!-- Textos informativos de la promoción -->
-        <div class="relative z-10 flex flex-col text-center md:text-left max-w-xl">
-          <div class="flex items-center justify-center md:justify-start gap-2 mb-3">
-            <span class="text-sky-400 font-mono text-[10px] uppercase tracking-widest"></span>
-            <span class="text-white/40 text-[10px] font-mono select-none">⭐⭐⭐</span>
-          </div>
-          
-          <h2 class="font-heading text-titanium text-3xl sm:text-4xl lg:text-5xl uppercase tracking-wide leading-none mb-4">
-            ¡MODO MUNDIAL <span class="text-sky-400 text-nowrap">ACTIVADO</span>!
-          </h2>
-          
-          <p class="text-white/60 font-mono text-xs uppercase tracking-wider leading-relaxed max-w-md">
-            Alentamos a la selección con un <span class="text-sky-400 font-bold">-10% OFF</span> automático en todo nuestros productos.
-          </p>
-        </div>
-
-        <!-- Bloque destacado del -10% (Estilo Camiseta + Sol de Mayo) -->
-        <div class="relative z-10 flex flex-col items-center justify-center bg-black/60 border border-sky-500/30 backdrop-blur-sm px-8 py-6 min-w-[200px] shadow-xl md:rotate-2 group-hover:rotate-0 transition-transform duration-300">
-          <span class="text-white/70 font-mono text-[10px] uppercase tracking-widest mb-1">DESCUENTO</span>
-          <div class="font-heading text-sky-400 text-5xl sm:text-6xl font-black leading-none tracking-tighter">
-            -10%
-          </div>
-          <span class="text-amber-400 font-heading text-lg font-bold tracking-widest mt-1">OFF</span>
-        </div>
-
-      </div>
-    {/if}
-
     <!-- Grilla de Productos Original de 4 columnas limpia -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5">
       {#if loading}

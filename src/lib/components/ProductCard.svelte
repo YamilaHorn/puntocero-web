@@ -22,18 +22,15 @@
   // Lógica de Stock
   $: tieneStock = product.isOnDemand || product.product_variants.some(v => v.stock_qty > 0);
 
-  // 🌟 APLICAMOS EL DESCUENTO DEL 10% PARA EL MUNDIAL
-  $: precioConDescuento = product.price * 0.9;
-
   // Armamos el texto de los talles de forma dinámica
   $: sizesText = product.isOnDemand 
     ? 'POR PEDIDO' 
     : 'AR: ' + [...new Set(product.product_variants.filter(v => v.stock_qty > 0).map(v => v.size.split(' ')[0]))].join(', ');
 
-  // Mensaje de WhatsApp actualizado de forma estratégica calculando el precio final promocional
+  // Mensaje de WhatsApp normalizado con el precio directo
   $: wppMessage = product.isOnDemand
-    ? `https://wa.me/${PHONE}?text=${encodeURIComponent(`¡Hola! Quiero encargar el modelo ${product.name} con la promo Mundial del 10% OFF. ¿Te puedo señar con $${(precioConDescuento * 0.5).toLocaleString('es-AR')}?`)}`
-    : `https://wa.me/${PHONE}?text=${encodeURIComponent(`¡Hola! Quiero comprar el modelo ${product.name} con la promo Mundial del 10% OFF (Precio Promo: $${precioConDescuento.toLocaleString('es-AR')}). ¿Tienen stock?`)}`;
+    ? `https://wa.me/${PHONE}?text=${encodeURIComponent(`¡Hola! Quiero encargar el modelo ${product.name}. ¿Te puedo señar con $${(product.price * 0.5).toLocaleString('es-AR')}?`)}`
+    : `https://wa.me/${PHONE}?text=${encodeURIComponent(`¡Hola! Quiero comprar el modelo ${product.name} (Precio: $${product.price.toLocaleString('es-AR')}). ¿Tienen stock?`)}`;
 
   // Badges superiores
   $: badge = product.isOnDemand ? 'BAJO PEDIDO' : (tieneStock ? 'DISPONIBLE' : 'AGOTADO');
@@ -42,10 +39,6 @@
 </script>
 
 <article class="bg-carbon border border-white/5 flex flex-col overflow-hidden group relative">
-  
-  <div class="absolute top-3 right-3 z-10 bg-sky-500 text-white font-heading font-black text-[12px] px-2 py-1 tracking-wider shadow-md uppercase rotate-3 group-hover:scale-110 transition-transform">
-    -10% OFF
-  </div>
 
   <a href="/catalog/{product.id}" class="relative aspect-square bg-obsidian overflow-hidden block"
      on:mouseenter={() => { if (product.images.length > 1) activeImageIndex = 1; }}
@@ -83,23 +76,11 @@
       </div>
     {/if}
 
-    <!-- 🌟 SECCIÓN DE PRECIOS "ANTES / AHORA" MUNDIALISTA -->
-    <div class="mb-5 flex flex-col gap-0.5">
-      
-      <!-- Precio Anterior (Tachado y apagado) -->
-      <div class="flex items-center gap-1.5 font-mono text-[11px] text-white/30 uppercase tracking-wider">
-        <span>Antes:</span>
-        <span class="line-through">${product.price.toLocaleString('es-AR')}</span>
-      </div>
-
-      <!-- Precio Actual Promocional (Destacado y llamativo) -->
-      <div class="flex items-baseline gap-1.5">
-        <span class="font-mono text-[12px] text-sky-400 font-bold uppercase tracking-widest">Ahora:</span>
-        <p class="text-volt font-heading text-2xl font-black tracking-tight">
-          ${precioConDescuento.toLocaleString('es-AR')}
-        </p>
-      </div>
-
+    <!-- SECCIÓN DE PRECIO ESTÁNDAR -->
+    <div class="mb-5">
+      <p class="text-volt font-heading text-3xl font-black tracking-tight leading-none">
+        ${product.price.toLocaleString('es-AR')}
+      </p>
     </div>
 
     <div class="mt-auto space-y-2">
