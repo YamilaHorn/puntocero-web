@@ -32,6 +32,9 @@
   // 2. Estados de selección del usuario
   let selectedColor: string = "";
   let selectedSize: string = "";
+  let buyerName = "";
+  let buyerEmail = "";
+  let buyerPhone = "";
 
   // Inicializa automáticamente con el primer color disponible cuando cargan los datos
   $: if (uniqueColors && uniqueColors.length > 0 && !selectedColor) {
@@ -71,6 +74,11 @@
       return;
     }
 
+    if (!buyerName || !buyerEmail || !buyerPhone) {
+      alert("Completá tus datos antes de continuar.");
+      return;
+    }
+
     // Buscar el talle seleccionado
     const talleSeleccionado = activeSizes.find(
       (s: any) => s.size === selectedSize,
@@ -84,11 +92,11 @@
       ? Number(product.price_total) / 2
       : Number(product.price_total);
 
-      console.log({
-	id: product.id,
-	title: product.name,
-	quantity: 1
-});
+    console.log({
+      id: product.id,
+      title: product.name,
+      quantity: 1,
+    });
 
     try {
       const response = await fetch("/api/create-preference", {
@@ -101,6 +109,9 @@
           color: selectedColor,
           size: selectedSize,
           quantity: 1,
+          buyerName,
+          buyerEmail,
+          buyerPhone,
         }),
       });
 
@@ -318,6 +329,37 @@
               </button>
             {/each}
           </div>
+        </div>
+      </div>
+
+      <div class="mb-6 pt-4 border-t border-white/5">
+        <span
+          class="block font-mono text-[10px] text-white/40 tracking-wider uppercase mb-3"
+        >
+          Datos para tu pedido
+        </span>
+
+        <div class="space-y-3">
+          <input
+            type="text"
+            bind:value={buyerName}
+            placeholder="Nombre y apellido"
+            class="w-full bg-carbon border border-white/10 p-3 text-sm text-titanium"
+          />
+
+          <input
+            type="email"
+            bind:value={buyerEmail}
+            placeholder="Email"
+            class="w-full bg-carbon border border-white/10 p-3 text-sm text-titanium"
+          />
+
+          <input
+            type="tel"
+            bind:value={buyerPhone}
+            placeholder="WhatsApp"
+            class="w-full bg-carbon border border-white/10 p-3 text-sm text-titanium"
+          />
         </div>
       </div>
 
