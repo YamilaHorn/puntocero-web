@@ -1,5 +1,12 @@
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
+import { MercadoPagoConfig, Payment } from "mercadopago";
+import { MP_ACCESS_TOKEN } from "$env/static/private";
+import { supabaseAdmin } from "$lib/server/supabaseAdmin";
+
+const client = new MercadoPagoConfig({
+  accessToken: MP_ACCESS_TOKEN,
+});
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
@@ -16,13 +23,47 @@ export const POST: RequestHandler = async ({ request }) => {
 
     console.log("Payment ID:", paymentId);
 
+    const payment = new Payment(client);
+
+    const paymentInfo = await payment.get({
+      id: paymentId,
+    });
+
+    console.log("Estado pago:", paymentInfo.status);
+    console.log("Order ID:", paymentInfo.external_reference);
+
+
+    if (paymentInfo.status === "approved") {
+
+      const { error } = await supabaseAdmin
+        .from("orders")
+        .update({
+          status: "approved",
+          payment_id: String(paymentInfo.id),
+        })
+        .eq(
+          "id",
+          Number(paymentInfo.external_reference)
+        );
+
+
+      if (error) {
+        console.error("Error actualizando orden:", error);
+      } else {
+        console.log("Orden actualizada correctamente");
+      }
+    }
+
+
     return json({ ok: true });
+
   } catch (error) {
-    console.error(error);
+
+    console.error("ERROR WEBHOOK:", error);
 
     return json(
       {
-        error: "Error en webhook",
+        error: "Error webhook",
       },
       {
         status: 500,
