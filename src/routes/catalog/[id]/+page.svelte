@@ -1,16 +1,17 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { onMount } from "svelte";
 
-  // Recibe la data inyectada desde +page.ts / +page.server.ts
   export let data: any;
 
-  // Forzamos reactividad segura con tipado dinámico
+  // Producto
   $: product = (data?.product || {}) as any;
   $: variants = (product?.product_variants || []) as any[];
 
-  // 1. Agrupar variantes por color para armar los botones selectores de miniaturas
+  // Agrupar variantes por color
   $: colorsMap = variants.reduce((acc: any, variant: any) => {
     const colorName = variant.color || "Único";
+
     if (!acc[colorName]) {
       acc[colorName] = {
         name: colorName,
@@ -19,48 +20,88 @@
         sizes: [],
       };
     }
+
     acc[colorName].sizes.push({
       size: variant.size,
       stock: variant.stock_qty,
       id: variant.id,
     });
+
     return acc;
   }, {});
 
   $: uniqueColors = Object.values(colorsMap) as any[];
 
-  // 2. Estados de selección del usuario
-  let selectedColor: string = "";
-  let selectedSize: string = "";
+  // Selecciones
+  let selectedColor = "";
+  let selectedSize = "";
+
   let buyerName = "";
   let buyerEmail = "";
   let buyerPhone = "";
 
-  // Inicializa automáticamente con el primer color disponible cuando cargan los datos
-  $: if (uniqueColors && uniqueColors.length > 0 && !selectedColor) {
+  // ENVÍO
+  let province = "";
+  let city = "";
+  let postalCode = "";
+
+  let shippingCost = 0;
+
+  let provinces: any[] = [];
+  let cities: any[] = [];
+
+  let selectedProvinceId = "";
+
+  let deliveryMethod = "pickup";
+
+  let address = "";
+
+  $: if (deliveryMethod === "pickup") {
+    shippingCost = 0;
+  }
+
+ $: isReservation =
+  Boolean(selectedSize) &&
+  activeSizes.find((s: any) => s.size === selectedSize)?.stock === 0;
+
+  $: savings =
+  product.original_price &&
+  Number(product.original_price) > Number(product.price_total)
+    ? Number(product.original_price) - Number(product.price_total)
+    : 0;
+
+  // Color inicial
+  $: if (uniqueColors.length > 0 && !selectedColor) {
     selectedColor = uniqueColors[0].name;
   }
 
-  // 3. Filtrados reactivos basados en el color activo que toca el usuario
+  // Imágenes y talles
   $: activeImages = (variants.find((v: any) => v.color === selectedColor)
     ?.images || []) as string[];
-  $: activeSizes = (colorsMap[selectedColor]?.sizes || []) as any[];
 
-  // Control de la galería de imágenes (vuelve a la primera foto si cambia de color)
+  $: activeSizes = colorsMap[selectedColor]?.sizes || [];
+
   let activeImageIndex = 0;
-  $: if (selectedColor) activeImageIndex = 0;
 
-  // Enlace y mensaje dinámico para concretar la consulta por WhatsApp enriquecido
+  $: if (selectedColor) {
+    activeImageIndex = 0;
+  }
+
+  // WhatsApp
   let wppMessage = "";
+
   $: {
     const nombre = product?.name || "";
     const color = selectedColor || "";
     const talleText = selectedSize ? ` y talle ${selectedSize}` : "";
 
     let specsText = "";
+
     if (product.category === "Botines") {
       const tapones = product.stud_type ? ` (${product.stud_type})` : "";
+
       const ajuste = product.lace_type ? ` - ${product.lace_type}` : "";
+
       specsText = `${tapones}${ajuste}`;
     }
 
@@ -68,6 +109,49 @@
 
     wppMessage = `https://api.whatsapp.com/send?phone=5493435349105&text=${encodeURIComponent(mensaje)}`;
   }
+
+  // Cargar provincias
+  onMount(async () => {
+    const response = await fetch("/api/shipping/provinces");
+
+    provinces = await response.json();
+  });
+
+  // Cambio de provincia
+  async function handleProvinceChange() {
+    const selected = provinces.find((p: any) => p.name === province);
+
+    if (!selected) return;
+
+    selectedProvinceId = selected.id;
+
+    const response = await fetch(
+      `/api/shipping/cities?provinceId=${selected.id}`,
+    );
+
+    cities = await response.json();
+
+    city = "";
+
+    // calcular envío
+
+    const shippingResponse = await fetch("/api/shipping/cost", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        province,
+      }),
+    });
+
+    const shippingData = await shippingResponse.json();
+
+    if (shippingResponse.ok) {
+      shippingCost = shippingData.shippingCost;
+    }
+  }
+
   async function comprarAhora() {
     if (!selectedSize) {
       alert("Seleccioná un talle.");
@@ -79,24 +163,13 @@
       return;
     }
 
-    // Buscar el talle seleccionado
-    const talleSeleccionado = activeSizes.find(
-      (s: any) => s.size === selectedSize,
-    );
-
-    // Si el talle no tiene stock => es una reserva
-    const esReserva = !talleSeleccionado || talleSeleccionado.stock === 0;
-
-    // Si es reserva se cobra el 50%
-    const precio = esReserva
-      ? Number(product.price_total) / 2
-      : Number(product.price_total);
-
-    console.log({
-      id: product.id,
-      title: product.name,
-      quantity: 1,
-    });
+    if (
+      deliveryMethod === "shipping" &&
+      (!province || !city || !postalCode || !address)
+    ) {
+      alert("Completá todos los datos de envío.");
+      return;
+    }
 
     try {
       const response = await fetch("/api/create-preference", {
@@ -104,29 +177,47 @@
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify({
           productId: product.id,
+
           color: selectedColor,
+
           size: selectedSize,
+
           quantity: 1,
+
           buyerName,
+
           buyerEmail,
+
           buyerPhone,
+
+          shippingCost,
+
+          shippingProvince: province,
+
+          shippingCity: city,
+
+          shippingPostalCode: postalCode,
+
+          deliveryMethod,
+          shippingAddress: address,
         }),
       });
 
       const data = await response.json();
 
-      console.log(data);
-
       if (response.ok && data.init_point) {
         window.location.href = data.init_point;
       } else {
         console.error(data);
+
         alert(data.error || "No se pudo generar el pago.");
       }
     } catch (error) {
       console.error(error);
+
       alert("Ocurrió un error al iniciar el pago.");
     }
   }
@@ -332,6 +423,27 @@
         </div>
       </div>
 
+      <div class="mb-6">
+        <span
+          class="block font-mono text-[10px] text-white/40 tracking-wider uppercase mb-3"
+        >
+          Método de entrega
+        </span>
+
+        <div class="space-y-3">
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="radio" bind:group={deliveryMethod} value="pickup" />
+
+            <span>🏪 Retiro / Coordinar con el vendedor</span>
+          </label>
+
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="radio" bind:group={deliveryMethod} value="shipping" />
+
+            <span>🚚 Envío a domicilio</span>
+          </label>
+        </div>
+      </div>
       <div class="mb-6 pt-4 border-t border-white/5">
         <span
           class="block font-mono text-[10px] text-white/40 tracking-wider uppercase mb-3"
@@ -363,6 +475,49 @@
         </div>
       </div>
 
+      {#if deliveryMethod === "shipping"}
+        <select
+          bind:value={province}
+          on:change={handleProvinceChange}
+          class="w-full bg-carbon border border-white/10 p-3 text-sm text-titanium"
+        >
+          <option value="">Seleccioná provincia</option>
+
+          {#each provinces as item}
+            <option value={item.name}>
+              {item.name}
+            </option>
+          {/each}
+        </select>
+
+        <select
+          bind:value={city}
+          class="w-full bg-carbon border border-white/10 p-3 text-sm text-titanium"
+        >
+          <option value="">Seleccioná ciudad</option>
+
+          {#each cities as item}
+            <option value={item.name}>
+              {item.name}
+            </option>
+          {/each}
+        </select>
+
+        <input
+          type="text"
+          bind:value={postalCode}
+          placeholder="Código postal"
+          class="w-full bg-carbon border border-white/10 p-3 text-sm text-titanium"
+        />
+
+        <input
+          type="text"
+          bind:value={address}
+          placeholder="Dirección"
+          class="w-full bg-carbon border border-white/10 p-3 text-sm text-titanium"
+        />
+      {/if}
+
       <div class="space-y-3">
         {#if product.is_on_demand}
           <div class="rounded border border-yellow-500/30 bg-yellow-500/10 p-4">
@@ -376,6 +531,134 @@
             </p>
           </div>
         {/if}
+
+        <div class="mb-6 border border-white/10 bg-carbon p-4 space-y-3">
+
+<div class="mb-6 border border-white/10 bg-carbon p-4 space-y-3">
+
+  <span class="block font-mono text-[10px] text-white/40 tracking-widest uppercase">
+    Resumen del pedido
+  </span>
+
+
+  <!-- Producto -->
+<div class="flex justify-between text-sm">
+  <span class="text-white/60">
+    {product.name}
+  </span>
+
+  <span>
+    {#if isReservation}
+      ${(
+        Number(product.price_total) / 2
+      ).toLocaleString("es-AR")}
+    {:else}
+      ${Number(product.price_total).toLocaleString("es-AR")}
+    {/if}
+  </span>
+</div>
+
+
+{#if isReservation}
+  <div class="border border-yellow-500/30 bg-yellow-500/10 p-3 mt-2">
+
+    <p class="text-xs text-yellow-300 font-semibold">
+      📦 Producto por reserva
+    </p>
+
+    <p class="text-xs text-white/70 mt-1">
+      Abonás ahora el 50%. El saldo restante se paga cuando llegue a Argentina.
+    </p>
+
+  </div>
+{/if}
+
+
+  <!-- Precio anterior y ahorro -->
+  {#if savings > 0 && !isReservation}
+
+    <div class="flex justify-between text-sm text-white/40">
+      <span>
+        Precio anterior
+      </span>
+
+      <span class="line-through">
+        ${Number(product.original_price).toLocaleString("es-AR")}
+      </span>
+    </div>
+
+
+    <div class="flex justify-between text-sm text-green-400 font-semibold">
+      <span>
+        Ahorrás
+      </span>
+
+      <span>
+        ${savings.toLocaleString("es-AR")}
+      </span>
+    </div>
+
+  {/if}
+
+
+  <!-- Envío -->
+  <div class="flex justify-between text-sm">
+
+    <span class="text-white/60">
+      Envío
+    </span>
+
+
+    <span>
+      {#if isReservation || deliveryMethod === "pickup"}
+
+        Sin cargo
+
+      {:else}
+
+        ${Number(shippingCost).toLocaleString("es-AR")}
+
+      {/if}
+    </span>
+
+  </div>
+
+
+  <!-- Total -->
+  <div class="border-t border-white/10 pt-3 flex justify-between font-bold">
+
+    <span>
+      Total
+    </span>
+
+
+    <span class="text-volt">
+
+      {#if isReservation}
+
+        ${(
+          Number(product.price_total) / 2
+        ).toLocaleString("es-AR")}
+
+
+      {:else}
+
+        ${(
+          Number(product.price_total) +
+          (deliveryMethod === "shipping"
+            ? Number(shippingCost)
+            : 0)
+        ).toLocaleString("es-AR")}
+
+      {/if}
+
+    </span>
+
+  </div>
+
+</div>
+
+</div>
 
         <button
           type="button"
