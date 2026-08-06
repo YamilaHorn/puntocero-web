@@ -170,9 +170,11 @@ export const POST: RequestHandler = async ({ request }) => {
         },
 
         back_urls: {
-          success: "https://punt0cero.netlify.app/pago/exito?order_id=${order.id}",
-          failure: "https://punt0cero.netlify.app/pago/error?order_id=${order.id}",
-          pending: "https://punt0cero.netlify.app/pago/pendiente?order_id=${order.id}",
+          success: `https://punt0cero.netlify.app/pago/exito?order_id=${order.id}`,
+
+          failure: `https://punt0cero.netlify.app/pago/error?order_id=${order.id}`,
+
+          pending: `https://punt0cero.netlify.app/pago/pendiente?order_id=${order.id}`,
         },
 
         auto_return: "approved",
