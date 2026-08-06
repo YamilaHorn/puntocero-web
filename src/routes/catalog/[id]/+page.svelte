@@ -56,6 +56,8 @@
 
   let address = "";
 
+  let selectedVariantId = "";
+
   $: if (deliveryMethod === "pickup") {
     shippingCost = 0;
   }
@@ -180,6 +182,8 @@
 
         body: JSON.stringify({
           productId: product.id,
+
+          variantId: selectedVariantId,
 
           color: selectedColor,
 
@@ -392,7 +396,10 @@
               {@const inStock = sizeItem.stock > 0}
               <button
                 type="button"
-                on:click={() => (selectedSize = sizeItem.size)}
+                on:click={() => {
+  selectedSize = sizeItem.size;
+  selectedVariantId = sizeItem.id;
+}}
                 class="py-3 font-mono text-xs font-bold tracking-widest relative border transition-all
 		{selectedSize === sizeItem.size
                   ? 'bg-volt text-obsidian border-volt'

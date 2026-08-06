@@ -10,6 +10,7 @@ const client = new MercadoPagoConfig({
 
 interface CreatePreferenceBody {
   productId: number;
+  variantId: number;
   color: string;
   size: string;
   quantity: number;
@@ -31,6 +32,7 @@ export const POST: RequestHandler = async ({ request }) => {
   try {
     const {
       productId,
+      variantId,
       color,
       size,
       quantity,
@@ -59,13 +61,17 @@ export const POST: RequestHandler = async ({ request }) => {
       return json({ error: "Producto no encontrado." }, { status: 404 });
     }
 
+    console.log("Datos recibidos:");
+    console.log({
+      productId,
+      variantId,
+    });
+
     // Buscar variante
     const { data: variant, error: variantError } = await supabaseAdmin
       .from("product_variants")
       .select("id, stock_qty")
-      .eq("product_id", Number(productId))
-      .eq("color", color)
-      .eq("size", size)
+      .eq("id", Number(variantId))
       .single();
 
     if (variantError || !variant) {
