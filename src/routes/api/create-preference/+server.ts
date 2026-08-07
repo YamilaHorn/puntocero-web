@@ -61,11 +61,12 @@ export const POST: RequestHandler = async ({ request }) => {
       return json({ error: "Producto no encontrado." }, { status: 404 });
     }
 
-    console.log("Datos recibidos:");
-    console.log({
-      productId,
-      variantId,
-    });
+    console.log("DATOS CREATE PREFERENCE:", {
+  productId,
+  variantId,
+  color,
+  size,
+});
 
     // Buscar variante
     const { data: variant, error: variantError } = await supabaseAdmin
