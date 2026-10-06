@@ -75,5 +75,23 @@ export const load: PageLoad = async ({ params }) => {
     product_variants: allVariants
   };
 
+  console.log("Productos hermanos:");
+console.table(
+  sisterProducts?.map((p: any) => ({
+    id: p.id,
+    variantes: p.product_variants?.length
+  }))
+);
+
+console.log("Todas las variantes:");
+console.table(
+  allVariants.map((v: any) => ({
+    id: v.id,
+    product_id: v.product_id,
+    color: v.color,
+    size: v.size
+  }))
+);
+
   return { product: finalProduct };
 };

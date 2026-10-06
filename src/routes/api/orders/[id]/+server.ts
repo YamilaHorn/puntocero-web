@@ -31,7 +31,8 @@ export const GET: RequestHandler = async ({ params }) => {
       shipping_province,
       shipping_city,
       shipping_postal_code,
-      delivery_method
+      delivery_method,
+      is_reservation
     `)
     .eq("id", id)
     .single();

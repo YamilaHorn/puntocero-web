@@ -7,6 +7,20 @@
   // Producto
   $: product = (data?.product || {}) as any;
   $: variants = (product?.product_variants || []) as any[];
+  $: esCalzado = ['botines', 'zapatillas'].includes(product.category?.trim().toLowerCase());
+
+  const sizeGuideRows = [
+    ['—', '36', '35', '22.5'],
+    ['—', '37', '36', '23.5'],
+    ['—', '38', '37', '24.0'],
+    ['—', '39', '38', '24.5'],
+    ['7', '40', '39', '25.0'],
+    ['8', '41', '40', '26.0'],
+    ['8.5', '42', '41', '26.5'],
+    ['9.5', '43', '42', '27.5'],
+    ['10', '44', '43', '28.0'],
+    ['11', '45', '44', '29.0']
+  ];
 
   // Agrupar variantes por color
   $: colorsMap = variants.reduce((acc: any, variant: any) => {
@@ -83,6 +97,15 @@
 
   $: activeSizes = colorsMap[selectedColor]?.sizes || [];
 
+  $: {
+  console.log("ACTIVE SIZES");
+  console.table(activeSizes);
+}
+
+$: {
+  console.log("VARIANTS");
+  console.table(variants);
+}
   let activeImageIndex = 0;
 
   $: if (selectedColor) {
@@ -337,6 +360,41 @@
             {product.description || "Sin descripción disponible."}
           </p>
         </div>
+
+        {#if esCalzado}
+          <details class="mb-6 border-y border-white/5 py-4">
+            <summary class="cursor-pointer font-mono text-[10px] text-volt tracking-wider uppercase">
+              Guía de talles
+            </summary>
+
+            <p class="mt-3 text-xs leading-relaxed text-titanium/60">
+              Medí tu pie con medias puestas, desde la punta del dedo gordo hasta el talón.
+              Si estás entre dos talles, tomá el más grande.
+            </p>
+
+            <div class="mt-3 overflow-x-auto">
+              <table class="w-full min-w-[280px] text-left text-xs">
+                <thead>
+                  <tr class="border-b border-white/10 text-volt">
+                    <th scope="col" class="px-3 py-2">US</th>
+                    <th scope="col" class="px-3 py-2">EU</th>
+                    <th scope="col" class="px-3 py-2">ARG</th>
+                    <th scope="col" class="px-3 py-2">CM del pie</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {#each sizeGuideRows as row}
+                    <tr class="border-b border-white/5 text-titanium/70 last:border-0">
+                      {#each row as value}
+                        <td class="px-3 py-2">{value}</td>
+                      {/each}
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        {/if}
 
         <div class="mb-6 pt-4 border-t border-white/5">
           <span
