@@ -7,19 +7,21 @@
   // Producto
   $: product = (data?.product || {}) as any;
   $: variants = (product?.product_variants || []) as any[];
-  $: esCalzado = ['botines', 'zapatillas'].includes(product.category?.trim().toLowerCase());
+  $: esCalzado = ["botines", "zapatillas"].includes(
+    product.category?.trim().toLowerCase(),
+  );
 
   const sizeGuideRows = [
-    ['—', '36', '35', '22.5'],
-    ['—', '37', '36', '23.5'],
-    ['—', '38', '37', '24.0'],
-    ['—', '39', '38', '24.5'],
-    ['7', '40', '39', '25.0'],
-    ['8', '41', '40', '26.0'],
-    ['8.5', '42', '41', '26.5'],
-    ['9.5', '43', '42', '27.5'],
-    ['10', '44', '43', '28.0'],
-    ['11', '45', '44', '29.0']
+    ["—", "36", "35", "22.5"],
+    ["—", "37", "36", "23.5"],
+    ["—", "38", "37", "24.0"],
+    ["—", "39", "38", "24.5"],
+    ["7", "40", "39", "25.0"],
+    ["8", "41", "40", "26.0"],
+    ["8.5", "42", "41", "26.5"],
+    ["9.5", "43", "42", "27.5"],
+    ["10", "44", "43", "28.0"],
+    ["11", "45", "44", "29.0"],
   ];
 
   // Agrupar variantes por color
@@ -76,15 +78,15 @@
     shippingCost = 0;
   }
 
- $: isReservation =
-  Boolean(selectedSize) &&
-  activeSizes.find((s: any) => s.size === selectedSize)?.stock === 0;
+  $: isReservation =
+    Boolean(selectedSize) &&
+    activeSizes.find((s: any) => s.size === selectedSize)?.stock === 0;
 
   $: savings =
-  product.original_price &&
-  Number(product.original_price) > Number(product.price_total)
-    ? Number(product.original_price) - Number(product.price_total)
-    : 0;
+    product.original_price &&
+    Number(product.original_price) > Number(product.price_total)
+      ? Number(product.original_price) - Number(product.price_total)
+      : 0;
 
   // Color inicial
   $: if (uniqueColors.length > 0 && !selectedColor) {
@@ -98,14 +100,14 @@
   $: activeSizes = colorsMap[selectedColor]?.sizes || [];
 
   $: {
-  console.log("ACTIVE SIZES");
-  console.table(activeSizes);
-}
+    console.log("ACTIVE SIZES");
+    console.table(activeSizes);
+  }
 
-$: {
-  console.log("VARIANTS");
-  console.table(variants);
-}
+  $: {
+    console.log("VARIANTS");
+    console.table(variants);
+  }
   let activeImageIndex = 0;
 
   $: if (selectedColor) {
@@ -363,13 +365,15 @@ $: {
 
         {#if esCalzado}
           <details class="mb-6 border-y border-white/5 py-4">
-            <summary class="cursor-pointer font-mono text-[10px] text-volt tracking-wider uppercase">
+            <summary
+              class="cursor-pointer font-mono text-[10px] text-volt tracking-wider uppercase"
+            >
               Guía de talles
             </summary>
 
             <p class="mt-3 text-xs leading-relaxed text-titanium/60">
-              Medí tu pie con medias puestas, desde la punta del dedo gordo hasta el talón.
-              Si estás entre dos talles, tomá el más grande.
+              Medí tu pie con medias puestas, desde la punta del dedo gordo
+              hasta el talón. Si estás entre dos talles, tomá el más grande.
             </p>
 
             <div class="mt-3 overflow-x-auto">
@@ -384,7 +388,9 @@ $: {
                 </thead>
                 <tbody>
                   {#each sizeGuideRows as row}
-                    <tr class="border-b border-white/5 text-titanium/70 last:border-0">
+                    <tr
+                      class="border-b border-white/5 text-titanium/70 last:border-0"
+                    >
                       {#each row as value}
                         <td class="px-3 py-2">{value}</td>
                       {/each}
@@ -455,9 +461,9 @@ $: {
               <button
                 type="button"
                 on:click={() => {
-  selectedSize = sizeItem.size;
-  selectedVariantId = sizeItem.id;
-}}
+                  selectedSize = sizeItem.size;
+                  selectedVariantId = sizeItem.id;
+                }}
                 class="py-3 font-mono text-xs font-bold tracking-widest relative border transition-all
 		{selectedSize === sizeItem.size
                   ? 'bg-volt text-obsidian border-volt'
@@ -598,132 +604,96 @@ $: {
         {/if}
 
         <div class="mb-6 border border-white/10 bg-carbon p-4 space-y-3">
+          <div class="mb-6 border border-white/10 bg-carbon p-4 space-y-3">
+            <span
+              class="block font-mono text-[10px] text-white/40 tracking-widest uppercase"
+            >
+              Resumen del pedido
+            </span>
 
-<div class="mb-6 border border-white/10 bg-carbon p-4 space-y-3">
+            <!-- Producto -->
+            <div class="flex justify-between text-sm">
+              <span class="text-white/60">
+                {product.name}
+              </span>
 
-  <span class="block font-mono text-[10px] text-white/40 tracking-widest uppercase">
-    Resumen del pedido
-  </span>
+              <span>
+                {#if isReservation}
+                  ${(Number(product.price_total) / 2).toLocaleString("es-AR")}
+                {:else}
+                  ${Number(product.price_total).toLocaleString("es-AR")}
+                {/if}
+              </span>
+            </div>
 
+            {#if isReservation}
+              <div
+                class="border border-yellow-500/30 bg-yellow-500/10 p-3 mt-2"
+              >
+                <p class="text-xs text-yellow-300 font-semibold">
+                  📦 Producto por reserva
+                </p>
 
-  <!-- Producto -->
-<div class="flex justify-between text-sm">
-  <span class="text-white/60">
-    {product.name}
-  </span>
+                <p class="text-xs text-white/70 mt-1">
+                  Abonás ahora el 50%. El saldo restante se paga cuando llegue a
+                  Argentina.
+                </p>
+              </div>
+            {/if}
 
-  <span>
-    {#if isReservation}
-      ${(
-        Number(product.price_total) / 2
-      ).toLocaleString("es-AR")}
-    {:else}
-      ${Number(product.price_total).toLocaleString("es-AR")}
-    {/if}
-  </span>
-</div>
+            <!-- Precio anterior y ahorro -->
+            {#if savings > 0 && !isReservation}
+              <div class="flex justify-between text-sm text-white/40">
+                <span> Precio anterior </span>
 
+                <span class="line-through">
+                  ${Number(product.original_price).toLocaleString("es-AR")}
+                </span>
+              </div>
 
-{#if isReservation}
-  <div class="border border-yellow-500/30 bg-yellow-500/10 p-3 mt-2">
+              <div
+                class="flex justify-between text-sm text-green-400 font-semibold"
+              >
+                <span> Ahorrás </span>
 
-    <p class="text-xs text-yellow-300 font-semibold">
-      📦 Producto por reserva
-    </p>
+                <span>
+                  ${savings.toLocaleString("es-AR")}
+                </span>
+              </div>
+            {/if}
 
-    <p class="text-xs text-white/70 mt-1">
-      Abonás ahora el 50%. El saldo restante se paga cuando llegue a Argentina.
-    </p>
+            <!-- Envío -->
+            <div class="flex justify-between text-sm">
+              <span class="text-white/60"> Envío </span>
 
-  </div>
-{/if}
+              <span>
+                {#if isReservation || deliveryMethod === "pickup"}
+                  Sin cargo
+                {:else}
+                  ${Number(shippingCost).toLocaleString("es-AR")}
+                {/if}
+              </span>
+            </div>
 
+            <!-- Total -->
+            <div
+              class="border-t border-white/10 pt-3 flex justify-between font-bold"
+            >
+              <span> Total </span>
 
-  <!-- Precio anterior y ahorro -->
-  {#if savings > 0 && !isReservation}
-
-    <div class="flex justify-between text-sm text-white/40">
-      <span>
-        Precio anterior
-      </span>
-
-      <span class="line-through">
-        ${Number(product.original_price).toLocaleString("es-AR")}
-      </span>
-    </div>
-
-
-    <div class="flex justify-between text-sm text-green-400 font-semibold">
-      <span>
-        Ahorrás
-      </span>
-
-      <span>
-        ${savings.toLocaleString("es-AR")}
-      </span>
-    </div>
-
-  {/if}
-
-
-  <!-- Envío -->
-  <div class="flex justify-between text-sm">
-
-    <span class="text-white/60">
-      Envío
-    </span>
-
-
-    <span>
-      {#if isReservation || deliveryMethod === "pickup"}
-
-        Sin cargo
-
-      {:else}
-
-        ${Number(shippingCost).toLocaleString("es-AR")}
-
-      {/if}
-    </span>
-
-  </div>
-
-
-  <!-- Total -->
-  <div class="border-t border-white/10 pt-3 flex justify-between font-bold">
-
-    <span>
-      Total
-    </span>
-
-
-    <span class="text-volt">
-
-      {#if isReservation}
-
-        ${(
-          Number(product.price_total) / 2
-        ).toLocaleString("es-AR")}
-
-
-      {:else}
-
-        ${(
-          Number(product.price_total) +
-          (deliveryMethod === "shipping"
-            ? Number(shippingCost)
-            : 0)
-        ).toLocaleString("es-AR")}
-
-      {/if}
-
-    </span>
-
-  </div>
-
-</div>
-
-</div>
+              <span class="text-volt">
+                {#if isReservation}
+                  ${(Number(product.price_total) / 2).toLocaleString("es-AR")}
+                {:else}
+                  ${(
+                    Number(product.price_total) +
+                    (deliveryMethod === "shipping" ? Number(shippingCost) : 0)
+                  ).toLocaleString("es-AR")}
+                {/if}
+              </span>
+            </div>
+          </div>
+        </div>
 
         <button
           type="button"

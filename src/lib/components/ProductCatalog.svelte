@@ -45,7 +45,8 @@
           stock_qty,
           images
         )
-      `); // 👈 2. AGREGADO 'original_price' A LA CONSULTA DE SUPABASE
+      `)
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error("Error al cargar productos:", error);
