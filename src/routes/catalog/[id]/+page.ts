@@ -47,10 +47,14 @@ export const load: PageLoad = async ({ params }) => {
         images
       )
     `)
-    .eq('name', currentProduct.name);
+    .eq('name', currentProduct.name)
+    .neq('id', currentProduct.id);
 
   // 3. Juntamos todas las variantes garantizando que viajen con su product_id correcto
-  let allVariants: any[] = [];
+  const allVariants: any[] = (currentProduct.product_variants || []).map((v: any) => ({
+    ...v,
+    product_id: v.product_id || currentProduct.id
+  }));
   
   if (sisterProducts) {
     sisterProducts.forEach((p: any) => {
@@ -59,14 +63,9 @@ export const load: PageLoad = async ({ params }) => {
           ...v,
           product_id: v.product_id || p.id
         }));
-        allVariants = [...allVariants, ...mapped];
+        allVariants.push(...mapped);
       }
     });
-  } else {
-    allVariants = (currentProduct.product_variants || []).map((v: any) => ({
-      ...v,
-      product_id: v.product_id || currentProduct.id
-    }));
   }
 
   // 4. Armamos el objeto final enriquecido para la vista de Svelte
@@ -74,24 +73,6 @@ export const load: PageLoad = async ({ params }) => {
     ...currentProduct,
     product_variants: allVariants
   };
-
-  console.log("Productos hermanos:");
-console.table(
-  sisterProducts?.map((p: any) => ({
-    id: p.id,
-    variantes: p.product_variants?.length
-  }))
-);
-
-console.log("Todas las variantes:");
-console.table(
-  allVariants.map((v: any) => ({
-    id: v.id,
-    product_id: v.product_id,
-    color: v.color,
-    size: v.size
-  }))
-);
 
   return { product: finalProduct };
 };

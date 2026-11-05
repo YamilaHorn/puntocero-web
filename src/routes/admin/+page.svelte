@@ -119,7 +119,7 @@
                 <td class="p-5 w-24">
                   <div class="w-16 h-16 bg-obsidian border border-white/10 flex items-center justify-center overflow-hidden">
                     {#if item.image_url}
-                      <img src={item.image_url} alt="" class="w-full h-full object-contain p-1" />
+                      <img src={item.image_url} alt="" width="64" height="64" loading="lazy" decoding="async" class="w-full h-full object-contain p-1" />
                     {:else}
                       <span class="text-[9px] text-white/10">S/F</span>
                     {/if}

@@ -4,29 +4,41 @@
     import { supabase } from "$lib/supabase";
     import { favoritesStore, loadFavorites } from "$lib/components/favoritesStore"; // Importamos el cerebro
     import { onMount } from "svelte";
+    import type { Session, User } from "@supabase/supabase-js";
 
-    let user: any = null;
+    let user: User | null = null;
+    let favoritesLoadedFor: string | null = null;
 
-    onMount(async () => {
+    function syncSession(session: Session | null) {
+        user = session?.user ?? null;
+
+        if (!user) {
+            favoritesLoadedFor = null;
+            favoritesStore.set([]);
+            return;
+        }
+
+        if (favoritesLoadedFor !== user.id) {
+            favoritesLoadedFor = user.id;
+            void loadFavorites(user.id);
+        }
+    }
+
+    onMount(() => {
         // Listener de autenticación: se activa al entrar, salir o registrarse
-        supabase.auth.onAuthStateChange((_event, session) => {
-            user = session?.user ?? null;
-            if (user) {
-                loadFavorites(user.id); // Carga los favoritos al entrar
-            } else {
-                favoritesStore.set([]); // Limpia si cierra sesión
-            }
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            syncSession(session);
         });
 
         // Verificación inicial de sesión
-        const { data: { session } } = await supabase.auth.getSession();
-        user = session?.user ?? null;
-        if (user) {
-            loadFavorites(user.id);
-        }
+        void supabase.auth.getSession().then(({ data: { session } }) => {
+            syncSession(session);
+        });
+
+        return () => subscription.unsubscribe();
     });
 </script>
 
-<Navbar  />
+<Navbar {user} />
 
 <slot />

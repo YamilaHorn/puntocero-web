@@ -1,5 +1,5 @@
 <script lang="ts">
-  const HERO_SHOE_IMG = '/logosolo.png';
+  const HERO_SHOE_IMG = '/logosolo.webp';
 
   const stats = [
     { value: '+100', label: 'Modelos'  },
@@ -92,6 +92,11 @@
         <div class="absolute w-72 h-72 md:w-96 md:h-96 rounded-full bg-volt/10 blur-[80px]" />
         <img src={HERO_SHOE_IMG}
              alt="Zapatilla de alto rendimiento con tecnología de amortiguación avanzada"
+             width="1200"
+             height="1698"
+             loading="eager"
+             fetchpriority="high"
+             decoding="async"
              class="relative z-10 w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl drop-shadow-2xl" />
       </div>
     </div>

@@ -8,7 +8,7 @@
   let dropdownOpen = false;
 
   // Estado del usuario autenticado
-  let user: User | null = null;
+  export let user: User | null = null;
 
   const navLinks = [
     { label: "INICIO", href: "/#hero" },
@@ -18,28 +18,14 @@
   ];
 
   onMount(() => {
-    // Escuchar el scroll de la página
     const onScroll = () => {
       scrolled = window.scrollY > 40;
     };
-    window.addEventListener("scroll", onScroll);
 
-    // 1. Comprobar si hay sesión activa al cargar el componente
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      user = session?.user ?? null;
-    });
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
 
-    // 2. Escuchar cambios de estado en vivo (login, logout, registro)
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      user = session?.user ?? null;
-    });
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      subscription.unsubscribe();
-    };
+    return () => window.removeEventListener("scroll", onScroll);
   });
 
   async function handleLogout() {
@@ -68,8 +54,11 @@
       <a href="/#hero" class="flex items-center gap-2">
         <div class="w-28 h-30 flex items-center justify-center">
           <img
-            src="/logo.png"
+            src="/logo.webp"
             alt="Logo Punto Cero"
+            width="512"
+            height="512"
+            decoding="async"
             class="w-full h-full object-contain"
           />
         </div>

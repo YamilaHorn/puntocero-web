@@ -101,6 +101,10 @@
     <img
       src={product.images[activeImageIndex] || product.images[0]}
       alt={product.alt}
+      width="640"
+      height="640"
+      loading="lazy"
+      decoding="async"
       class="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
     />
 

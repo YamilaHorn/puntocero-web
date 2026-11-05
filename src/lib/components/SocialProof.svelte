@@ -1,8 +1,8 @@
 <script lang="ts">
-  const MARATHON_IMG = 'testimonio 1.jpeg';
-  const CROSSFIT_IMG = 'testimonio 2.jpeg';
-  const TRAIL_IMG    = 'testimonio 3.jpeg';
-  const RUNNER_IMG   = 'testimonio 4.jpeg';
+  const MARATHON_IMG = '/testimonio-1.webp';
+  const CROSSFIT_IMG = '/testimonio-2.webp';
+  const TRAIL_IMG    = '/testimonio-3.webp';
+  const RUNNER_IMG   = '/testimonio-4.webp';
 
   type Review = { image: string; alt: string; name: string; location: string; product: string; rating: number; metric: string; metricLabel: string; quote: string; };
 
@@ -51,6 +51,10 @@
         <article class="group relative bg-carbon overflow-hidden">
           <div class="relative aspect-[4/3] overflow-hidden">
             <img src={review.image} alt={review.alt}
+                 width="800"
+                 height="600"
+                 loading="lazy"
+                 decoding="async"
                  class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-gradient-to-t from-carbon via-carbon/50 to-transparent" />
             <div class="absolute top-4 right-4 bg-obsidian/80 backdrop-blur-sm border border-white/10 px-3 py-2">

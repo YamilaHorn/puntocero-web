@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Navbar         from '$lib/components/Navbar.svelte';
   import HeroSection    from '$lib/components/HeroSection.svelte';
   import ProductCatalog from '$lib/components/ProductCatalog.svelte';
   import SpecGrid       from '$lib/components/SpecGrid.svelte';
@@ -12,10 +11,10 @@
 <svelte:head>
   <title>Punto Cero — Calzado Deportivo de Alto Rendimiento</title>
   <meta name="description" content="Botines y zapatillas de alto rendimiento. Comprá online o consultá por WhatsApp." />
+  <link rel="preload" href="/logosolo.webp" as="image" fetchpriority="high" />
 </svelte:head>
 
 <div class="bg-obsidian min-h-screen">
-  <Navbar />
   <main>
     <HeroSection />
     <ProductCatalog />

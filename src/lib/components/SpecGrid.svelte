@@ -1,7 +1,7 @@
 <script lang="ts">
   // Imágenes de stock profesionales con estética urbana/deportiva oscura
   const ATENCION_IMG  = '/atencion.avif'; // Sesión / Asesoría deportiva
-  const ENVIOS_IMG    = '/envios.png'; // Entrega en mano / Personal de confianza
+  const ENVIOS_IMG    = '/envios.webp'; // Entrega en mano / Personal de confianza
   const GARANTIA_IMG  = '/garantia.avif'; // Calidad / Textura deportiva premium
 
   type Spec = { id: string; title: string; subtitle: string; description: string; metric: string; metricLabel: string; image: string; imageAlt: string; };
@@ -66,6 +66,10 @@
 
           <div class="relative w-full aspect-square mb-8 overflow-hidden bg-obsidian">
             <img src={spec.image} alt={spec.imageAlt}
+                 width="900"
+                 height="900"
+                 loading="lazy"
+                 decoding="async"
                  class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
             <div class="absolute inset-0 bg-gradient-to-t from-carbon/80 to-transparent" />
             <div class="absolute bottom-4 left-4">

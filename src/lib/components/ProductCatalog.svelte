@@ -40,7 +40,6 @@
         stud_type,    
         lace_type,    
         product_variants (
-          id,
           size,
           stock_qty,
           images
@@ -62,10 +61,8 @@
           }
         });
 
-        const uniqueImages = allImages.filter((value, index, self) => self.indexOf(value) === index);
-        const uniqueSizes = variants
-          .map((v: any) => v.size)
-          .filter((value: any, index: number, self: any[]) => self.indexOf(value) === index);
+        const uniqueImages = [...new Set(allImages)];
+        const uniqueSizes = [...new Set<string>(variants.map((v: any) => v.size))];
 
         return {
           id: p.id,

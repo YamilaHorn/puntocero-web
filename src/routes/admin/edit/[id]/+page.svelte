@@ -389,7 +389,7 @@
           <div class="md:col-span-2 flex gap-2 overflow-x-auto py-1">
             {#each color_images as imgUrl, idx}
               <div class="w-16 h-16 bg-obsidian border border-white/10 flex-shrink-0 relative group">
-                <img src={imgUrl} alt="Vista" class="w-full h-full object-contain p-1" />
+                <img src={imgUrl} alt="Vista" width="64" height="64" loading="lazy" decoding="async" class="w-full h-full object-contain p-1" />
                 <button type="button" on:click={() => removeImage(idx)} class="absolute inset-0 bg-red-600/90 text-white font-mono text-[9px] uppercase tracking-widest opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                   Borrar
                 </button>

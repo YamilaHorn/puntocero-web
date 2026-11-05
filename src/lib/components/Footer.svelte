@@ -14,8 +14,12 @@
       <!-- Bloque del Logotipo Unificado -->
       <div class="flex items-center gap-3">
         <img 
-          src="/logo.png" 
+          src="/logo.webp"
           alt="Punto Cero Logo" 
+          width="512"
+          height="512"
+          loading="lazy"
+          decoding="async"
           class="h-40 w-auto object-contain brightness-95" 
         />
       </div>

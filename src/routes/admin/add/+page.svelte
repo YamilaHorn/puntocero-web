@@ -323,7 +323,7 @@
           <div class="md:col-span-2 flex gap-2 overflow-x-auto py-1">
             {#each color_images as imgUrl}
               <div class="w-16 h-16 bg-obsidian border border-white/10 flex-shrink-0 relative">
-                <img src={imgUrl} alt="Vista" class="w-full h-full object-contain p-1" />
+                <img src={imgUrl} alt="Vista" width="64" height="64" loading="lazy" decoding="async" class="w-full h-full object-contain p-1" />
               </div>
             {/each}
             {#if color_images.length === 0}

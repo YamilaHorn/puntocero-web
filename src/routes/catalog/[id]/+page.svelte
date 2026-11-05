@@ -7,6 +7,12 @@
   // Producto
   $: product = (data?.product || {}) as any;
   $: variants = (product?.product_variants || []) as any[];
+  $: productMetaDescription = String(
+    product.description || "Consultá por este modelo de calzado deportivo en Punto Cero.",
+  )
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
   $: esCalzado = ["botines", "zapatillas"].includes(
     product.category?.trim().toLowerCase(),
   );
@@ -252,6 +258,11 @@
   }
 </script>
 
+<svelte:head>
+  <title>{product.name ? `${product.name} | Punto Cero` : "Producto | Punto Cero"}</title>
+  <meta name="description" content={productMetaDescription} />
+</svelte:head>
+
 <div class="min-h-screen bg-obsidian text-titanium pt-28 pb-12 px-6">
   <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
     <div class="space-y-4">
@@ -262,6 +273,10 @@
           <img
             src={activeImages[activeImageIndex]}
             alt={product.name}
+            width="800"
+            height="800"
+            fetchpriority="high"
+            decoding="async"
             class="max-h-full object-contain transition-all duration-300"
           />
         {:else}
@@ -285,6 +300,10 @@
             <img
               src={img}
               alt="Vista alternativa"
+              width="80"
+              height="80"
+              loading="lazy"
+              decoding="async"
               class="w-full h-full object-contain"
             />
           </button>
@@ -436,6 +455,10 @@
                   <img
                     src={colorItem.thumbnail}
                     alt={colorItem.name}
+                    width="56"
+                    height="56"
+                    loading="lazy"
+                    decoding="async"
                     class="w-full h-full object-contain"
                   />
                 {:else}
