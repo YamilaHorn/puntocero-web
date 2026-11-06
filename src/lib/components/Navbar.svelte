@@ -102,7 +102,7 @@
           class="hidden lg:flex items-center gap-3 pr-2 border-r border-white/5"
         >
           <a
-            href="https://instagram.com/tu_usuario"
+            href="https://instagram.com/punt0.cero"
             target="_blank"
             rel="noopener noreferrer"
             class="text-titanium/40 hover:text-volt transition-colors p-1"
@@ -115,7 +115,7 @@
             >
           </a>
           <a
-            href="https://tiktok.com/@tu_usuario"
+            href="https://tiktok.com/@punt0_cero"
             target="_blank"
             rel="noopener noreferrer"
             class="text-titanium/40 hover:text-volt transition-colors p-1"
