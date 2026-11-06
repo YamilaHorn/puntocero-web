@@ -2,6 +2,13 @@
   import { onMount } from 'svelte';
   import { supabase } from '$lib/supabase';
   import { goto } from '$app/navigation';
+  import {
+    createProductSizeMatrix,
+    getAvailableProductSizes,
+    parseProductVariantSize,
+    serializeProductVariantSize
+  } from '$lib/admin/productSizes';
+  import type { ProductSizeRow } from '$lib/admin/productSizes';
 
   export let data: any;
 
@@ -28,53 +35,15 @@
   let product_color: string = '';
   let color_images: string[] = [];
 
-  // 📐 Estructura fija de la matriz de talles expandida
-  interface SizeRow {
-    ar: string;
-    us: string;
-    stock: number;
-    enabled: boolean;
-    variantId?: number;
-  }
-
-  let sizeMatrix: SizeRow[] = [
-    // --- INDUMENTARIA ---
-    { ar: 'S', us: 'S', stock: 0, enabled: false },
-    { ar: 'M', us: 'M', stock: 0, enabled: false },
-    { ar: 'L', us: 'L', stock: 0, enabled: false },
-    { ar: 'XL', us: 'XL', stock: 0, enabled: false },
-    
-    // --- CALZADO ---
-    { ar: '31', us: '13Y', stock: 0, enabled: false },
-    { ar: '31.5', us: '13.5Y', stock: 0, enabled: false },
-    { ar: '32', us: '1Y',   stock: 0, enabled: false },
-    { ar: '32.5', us: '1.5Y', stock: 0, enabled: false },
-    { ar: '33', us: '2Y',   stock: 0, enabled: false },
-    { ar: '33.5', us: '2.5Y', stock: 0, enabled: false },
-    { ar: '34', us: '3Y',   stock: 0, enabled: false },
-    { ar: '34.5', us: '3.5Y', stock: 0, enabled: false },
-    { ar: '35', us: '4Y',   stock: 0, enabled: false },
-    { ar: '35.5', us: '4.5Y', stock: 0, enabled: false },
-    { ar: '36', us: '5Y',   stock: 0, enabled: false },
-    { ar: '36.5', us: '5.5Y', stock: 0, enabled: false },
-    { ar: '37', us: '6Y',   stock: 0, enabled: false },
-    { ar: '37.5', us: '6.5Y', stock: 0, enabled: false },
-    { ar: '38', us: '6.5',  stock: 0, enabled: false },
-    { ar: '38.5', us: '7',   stock: 0, enabled: false },
-    { ar: '39', us: '7.5',  stock: 0, enabled: false },
-    { ar: '39.5', us: '8',   stock: 0, enabled: false },
-    { ar: '40', us: '8',    stock: 0, enabled: false },
-    { ar: '40.5', us: '8.5',  stock: 0, enabled: false },
-    { ar: '41', us: '8.5',  stock: 0, enabled: false },
-    { ar: '41.5', us: '9',   stock: 0, enabled: false },
-    { ar: '42', us: '9.5',  stock: 0, enabled: false },
-    { ar: '42.5', us: '10',  stock: 0, enabled: false },
-    { ar: '43', us: '10',   stock: 0, enabled: false },
-    { ar: '43.5', us: '10.5', stock: 0, enabled: false },
-    { ar: '44', us: '11',   stock: 0, enabled: false },
-    { ar: '44.5', us: '11.5', stock: 0, enabled: false },
-    { ar: 'Único', us: 'U',  stock: 0, enabled: false }
-  ];
+  let sizeMatrix: ProductSizeRow[] = createProductSizeMatrix();
+  let existingVariantSizes: string[] = [];
+  let availableSizeMatrix: ProductSizeRow[] = [];
+  $: availableSizeMatrix = getAvailableProductSizes(
+    sizeMatrix,
+    category,
+    name,
+    existingVariantSizes
+  );
 
   $: productId = data?.params?.id || data?.id;
 
@@ -111,7 +80,6 @@
       price = prodData.price_total.toString();
       original_price = prodData.original_price ? prodData.original_price.toString() : '';
       category = prodData.category;
-      category = prodData.category;
       section = prodData.section || 'TODOS';
       description = prodData.description;
       is_on_demand = prodData.is_on_demand;
@@ -122,6 +90,7 @@
       if (prodData.lace_type) lace_type = prodData.lace_type;
 
       const firstVariant = prodData.product_variants?.[0];
+      existingVariantSizes = (prodData.product_variants || []).map((variant: any) => variant.size);
       if (firstVariant) {
         product_color = firstVariant.color || '';
         color_images = firstVariant.images || [];
@@ -131,13 +100,10 @@
         prodData.product_variants.forEach((v: any) => {
           if (v.size === 'CONSULTAR TALLE' || is_on_demand) return;
 
-          const cleanAr = v.size.split(' ')[0];
-          const matchIndex = sizeMatrix.findIndex(item => item.ar === cleanAr);
-          
-          if (matchIndex !== -1) {
-            sizeMatrix[matchIndex].stock = v.stock_qty;
-            sizeMatrix[matchIndex].enabled = v.stock_qty > 0;
-            sizeMatrix[matchIndex].variantId = v.id;
+          const row = parseProductVariantSize(v.size, sizeMatrix);
+          if (row) {
+            row.stock = v.stock_qty || 0;
+            row.enabled = true;
           }
         });
       }
@@ -184,7 +150,7 @@
   }
 
   async function handleUpdateProduct(): Promise<void> {
-    const activeVariants = sizeMatrix.filter(v => v.enabled);
+    const activeVariants = availableSizeMatrix.filter(v => v.enabled);
     if (!is_on_demand && activeVariants.length === 0) {
       alert('Por favor, tildá al menos un talle con stock disponible.');
       return;
@@ -225,7 +191,11 @@
       if (productError) throw productError;
 
       // Limpiamos las variantes viejas asociadas para re-escribir de forma limpia
-      await supabase.from('product_variants').delete().eq('product_id', idFromUrl);
+      const { error: deleteError } = await supabase
+        .from('product_variants')
+        .delete()
+        .eq('product_id', idFromUrl);
+      if (deleteError) throw deleteError;
 
       const variantsToInsert = is_on_demand 
         ? [{
@@ -236,19 +206,10 @@
             images: color_images
           }]
         : activeVariants.map(v => {
-            let sizeString = '';
-            if (v.ar === 'Único') {
-              sizeString = 'Único';
-            } else if (['S', 'M', 'L', 'XL'].includes(v.ar)) {
-              sizeString = `${v.ar}`;
-            } else {
-              sizeString = `${v.ar} AR (${v.us} US)`;
-            }
-
             return {
               product_id: idFromUrl,
               color: product_color.toUpperCase().trim(),
-              size: sizeString,
+              size: serializeProductVariantSize(v),
               stock_qty: parseInt(v.stock.toString()) || 0,
               images: color_images
             };
@@ -403,7 +364,7 @@
         <h2 class="text-xs font-mono tracking-widest text-white/40 uppercase border-b border-white/5 pb-2">3. Configurar Curva de Talles Actuales</h2>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
-          {#each sizeMatrix as row}
+          {#each availableSizeMatrix as row}
             <div class="p-4 border transition-all flex flex-col justify-between h-28
               {row.enabled ? 'bg-obsidian border-volt/40' : 'bg-obsidian/40 border-white/5 opacity-50'}">
               
